@@ -66,14 +66,14 @@ function bsd_build_data_field( $post ){
 
 		<?php
 
-		$result = $wpdb->get_results("
+		$result = $wpdb->get_results($wpdb->prepare("
 					        SELECT
 					            *
 							FROM
 							  	$table_name_bookings
 							WHERE
-								post_id = $post->ID					        					    
-					    ");
+								post_id = %d					        					    
+					    ", $post->ID));
 
 		foreach ($result AS $userdata) {
 
@@ -137,15 +137,15 @@ function bsd_save_data_field_data( $post_id ){
 
 	if ( isset( $_REQUEST['bsd_attendants'] ) ) {
 
-		$result = $wpdb->get_results("
+		$result = $wpdb->get_results($wpdb->prepare("
 			SELECT
 		      *
 			FROM
 			  $table_name_bookings
 			WHERE
-			  post_id = $post_id AND 
+			  post_id = %d AND 
 			  is_fix = 1
-		");
+		", $post_id));
 
 		foreach ($result AS $userdata) {
 		    if (!in_array($userdata->user_id, $_REQUEST['bsd_attendants'])) {

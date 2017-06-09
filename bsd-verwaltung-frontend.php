@@ -115,15 +115,15 @@ function draw_events_panel() {
 			continue;
 		}
 
-		$result = $wpdb->get_results("
+		$result = $wpdb->get_results($wpdb->prepare("
 	        SELECT
 	            *
 	        FROM 
 	        	$table_name_bookings
 	      	WHERE
-	      		post_id = $post->ID AND 
-	      		user_id = $user->ID
-	    ");
+	      		post_id = %d AND 
+	      		user_id = %d
+	    ", $post->ID, $user->ID));
 
 		$cnt_result = count($result);
 
