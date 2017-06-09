@@ -61,7 +61,7 @@ add_action( 'wp_enqueue_scripts', 'load_js' );
  * add plugin css files to frontend
  */
 function load_css() {
-	wp_enqueue_style('bsd_verwaltung_style', plugins_url( '/css/bootstrap_custom.css' , __FILE__ ));
+	wp_enqueue_style('bsd_verwaltung_style', plugins_url( '/css/styles.css' , __FILE__ ));
 }
 add_action('wp_enqueue_scripts', 'load_css');
 
@@ -138,11 +138,11 @@ function custom_post_type() {
 		'name'                => _x( 'BSDs', 'Post Type General Name', 'twentythirteen' ),
 		'singular_name'       => _x( 'BSD', 'Post Type Singular Name', 'twentythirteen' ),
 		'menu_name'           => __( 'BSDs', 'twentythirteen' ),
-		'parent_item_colon'   => __( 'Übergeordneter BSD', 'twentythirteen' ),
+		'parent_item_colon'   => __( 'Ãœbergeordneter BSD', 'twentythirteen' ),
 		'all_items'           => __( 'Alle BSDs', 'twentythirteen' ),
 		'view_item'           => __( 'BSD anzeigen', 'twentythirteen' ),
-		'add_new_item'        => __( 'BSD hinzufügen', 'twentythirteen' ),
-		'add_new'             => __( 'hinzufügen', 'twentythirteen' ),
+		'add_new_item'        => __( 'BSD hinzufÃ¼gen', 'twentythirteen' ),
+		'add_new'             => __( 'hinzufÃ¼gen', 'twentythirteen' ),
 		'edit_item'           => __( 'BSD bearbeiten', 'twentythirteen' ),
 		'update_item'         => __( 'BSD aktualisieren', 'twentythirteen' ),
 		'search_items'        => __( 'BSD suchen', 'twentythirteen' ),
@@ -257,7 +257,7 @@ function send_bsd_mail($post_id, $user_id, $mailtype) {
 	switch ($mailtype) {
 		case 'agree_on_bsd':
 				$subject = 'Brandsicherheitsdienst - Zusage';
-				$message = 'Du wurdest für einen Brandsicherheitsdienst gesetzt. Folgend findest du die Infos zum betreffenden Dienst:<br><br>';
+				$message = 'Du wurdest fÃ¼r einen Brandsicherheitsdienst gesetzt. Folgend findest du die Infos zum betreffenden Dienst:<br><br>';
 				$message .= $post_data->post_title . '<br>';
 				$message .= 'Datum: ' . get_post_meta( $post_id, '_bsd_begin_date', true ) . '<br>';
 				$message .= 'Beginn: ' . get_post_meta( $post_id, '_bsd_begin_time', true ) . ' Uhr<br>';
@@ -267,7 +267,7 @@ function send_bsd_mail($post_id, $user_id, $mailtype) {
 			break;
 		case 'reject_on_bsd_by_admin':
 				$subject = 'Brandsicherheitsdienst - Absage';
-				$message = 'Du wurdest von einem Brandsicherheitsdienst abgezogen, für den du gesetzt warst. Folgend findest du die Infos zum betreffenden Dienst:<br><br>';
+				$message = 'Du wurdest von einem Brandsicherheitsdienst abgezogen, fÃ¼r den du gesetzt warst. Folgend findest du die Infos zum betreffenden Dienst:<br><br>';
 				$message .= $post_data->post_title . '<br>';
 				$message .= 'Datum: ' . get_post_meta( $post_id, '_bsd_begin_date', true ) . '<br>';
 				$message .= 'Beginn: ' . get_post_meta( $post_id, '_bsd_begin_time', true ) . ' Uhr<br>';
@@ -277,7 +277,7 @@ function send_bsd_mail($post_id, $user_id, $mailtype) {
 			break;
 		case 'reject_on_bsd_by_user':
 				$subject = 'Brandsicherheitsdienst - Absage';
-				$message = 'Du hast dich von einem Brandsicherheitsdienst zurückgezogen, für den du bereits gesetzt warst. Folgend findest du die Infos zum betreffenden Dienst:<br><br>';
+				$message = 'Du hast dich von einem Brandsicherheitsdienst zurÃ¼ckgezogen, fÃ¼r den du bereits gesetzt warst. Folgend findest du die Infos zum betreffenden Dienst:<br><br>';
 				$message .= $post_data->post_title . '<br>';
 				$message .= 'Datum: ' . get_post_meta( $post_id, '_bsd_begin_date', true ) . '<br>';
 				$message .= 'Beginn: ' . get_post_meta( $post_id, '_bsd_begin_time', true ) . ' Uhr<br>';
