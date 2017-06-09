@@ -1,17 +1,17 @@
 <?php
 
 /*
-Plugin Name: BSD Verwaltung v2
-Plugin URI:  http://ffbn.de
-Description: Verwalten und Vergabe von Brandsicherheitsdiensten an die Mannschaft der Feuerwehr
+Plugin Name: WP BSD Verwaltung
+Plugin URI:  https://github.com/mreichardt1992/wp-bsd-verwaltung
+Description: Verwaltung und Vergabe von Brandsicherheitsdiensten an die Mannschaft der Feuerwehr
 Version:     1.0
 Author:      Max Reichardt
 License:     GPL2
-License URI: https://www.gnu.org/licenses/gpl-2.0.html
+License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
 {Plugin Name} is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 2 of the License, or
+the Free Software Foundation, either version 3 of the License, or
 any later version.
 
 {Plugin Name} is distributed in the hope that it will be useful,
