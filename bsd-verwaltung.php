@@ -1,12 +1,12 @@
 <?php
 
 /*
-Plugin Name: WP BSD Verwaltung
+Plugin Name: BSD Verwaltung
 Plugin URI:  https://github.com/mreichardt1992/wp-bsd-verwaltung
 Description: Verwaltung und Vergabe von Brandsicherheitsdiensten an die Mannschaft der Feuerwehr
 Version:     1.0
 Author:      Max Reichardt
-License:     GPL2
+License:     GPL3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
 {Plugin Name} is free software: you can redistribute it and/or modify
