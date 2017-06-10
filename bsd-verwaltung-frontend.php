@@ -20,19 +20,18 @@ function draw_events_panel() {
 		'offset'           => 0,
 		'category'         => '',
 		'category_name'    => '',
-		'orderby'          => 'date',
-		'order'            => 'DESC',
 		'include'          => '',
 		'exclude'          => '',
-		'meta_key'         => '',
-		'meta_value'       => '',
 		'post_type'        => 'bsds',
 		'post_mime_type'   => '',
 		'post_parent'      => '',
-		'author'	   => '',
+		'author'	       => '',
 		'author_name'	   => '',
 		'post_status'      => 'publish',
-		'suppress_filters' => true
+		'suppress_filters' => true,
+		'meta_key'         => '_bsd_begin_date',
+		'orderby'          => 'meta_value',
+		'order'            => 'ASC'
 	);
 
 	$posts_array = get_posts( $args );
@@ -64,7 +63,7 @@ function draw_events_panel() {
 
 		$panel .= '<div class="widget">';
 			$panel .= '<div class="widget-inner">';
-				$panel .= '<h3 class="widget-title">'.get_post_meta( $post->ID, '_bsd_begin_date', true ). ' | ' .$post_data->post_title.'</h3>';
+				$panel .= '<h3 class="widget-title">'.date('d.m.Y', $bsd_date). ' | ' .$post_data->post_title.'</h3>';
 				$panel .= '<div id="store" class="widget-content">';
 					$panel .= '<p>';
 					$panel .=  '<b>'.__("Beginn:", "wp-bsd-verwaltung").' </b>' . get_post_meta( $post->ID, '_bsd_begin_time', true ) . " Uhr | ";
@@ -90,7 +89,6 @@ function draw_events_panel() {
 
         $x++;
 	}
-
 
 	$panel .= '</div>';
 	$panel .= '</aside>';

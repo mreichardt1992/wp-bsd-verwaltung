@@ -23,7 +23,7 @@ function bsd_build_data_field( $post ){
 	global $table_name_bookings;
 
 	$current_location = get_post_meta( $post->ID, '_bsd_location', true );
-	$current_begin_date = get_post_meta( $post->ID, '_bsd_begin_date', true );
+	$current_begin_date = date('d.m.Y', strtotime(get_post_meta( $post->ID, '_bsd_begin_date', true )));
 	$current_begin_time = get_post_meta( $post->ID, '_bsd_begin_time', true );
 	$current_count_persons = get_post_meta( $post->ID, '_bsd_count_persons', true );
 
@@ -124,7 +124,7 @@ function bsd_save_data_field_data( $post_id ){
 	}
 
 	if ( isset( $_REQUEST['bsd_begin_date'] ) ) {
-		update_post_meta( $post_id, '_bsd_begin_date', sanitize_text_field( $_POST['bsd_begin_date'] ) );
+		update_post_meta( $post_id, '_bsd_begin_date', sanitize_text_field( date('Y-m-d', strtotime($_POST['bsd_begin_date'])) ) );
 	}
 
 	if ( isset( $_REQUEST['bsd_begin_time'] ) ) {
