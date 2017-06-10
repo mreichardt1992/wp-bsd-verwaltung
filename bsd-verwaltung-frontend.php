@@ -1,69 +1,5 @@
 <?php
 
-function draw_events_table () {
-	global $wpdb;
-
-	$table = '';
-
-	$table .= '<table class="table table-hover table-condensed table-responsive">';
-	    $table .= '<thead><tr><th>#</th><th>Veranstaltung</th><th>Beginn BSD</th><th>Ort</th><th>Anzahl Personen</th></tr></thead>';
-	    $table .= '<tbody>';
-
-        $args = array(
-            'posts_per_page'   => 100,
-            'offset'           => 0,
-            'category'         => '',
-            'category_name'    => '',
-            'orderby'          => 'date',
-            'order'            => 'DESC',
-            'include'          => '',
-            'exclude'          => '',
-            'meta_key'         => '',
-            'meta_value'       => '',
-            'post_type'        => 'bsds',
-            'post_mime_type'   => '',
-            'post_parent'      => '',
-            'author'	   => '',
-            'author_name'	   => '',
-            'post_status'      => 'publish',
-            'suppress_filters' => true
-        );
-
-        $posts_array = get_posts( $args );
-
-        $x = 1;
-
-        foreach ($posts_array AS $post) {
-
-	        $date = strtotime(date('d.m.Y', time()));
-
-	        $bsd_date = strtotime(date('d.m.Y', strtotime(get_post_meta( $post->ID, '_bsd_begin_date', true ))));
-
-            if ($bsd_date < $date) {
-                continue;
-            }
-
-	        $table .= '<tr>';
-                $table .= '<td>' . $x . '</td>';
-                $table .= '<td>' . $post->post_title . '</td>';
-                $table .= '<td>' . get_post_meta( $post->ID, '_bsd_begin_date', true ) . " - " . get_post_meta( $post->ID, '_bsd_begin_time', true ) . " Uhr" . '</td>';
-                $table .= '<td>' . get_post_meta( $post->ID, '_bsd_location', true );
-                $table .= '<td>' . get_post_meta( $post->ID, '_bsd_count_persons', true );
-	        $table .= '</tr>';
-
-	        $x++;
-        }
-
-	    $table .= '</tbody>';
-	$table .= '</table>';
-
-	return $table;
-
-}
-add_shortcode('bsd_tabelle', 'draw_events_table');
-
-
-
 function draw_events_panel() {
 	global $wpdb;
 	global $table_name_bookings;
@@ -108,7 +44,7 @@ function draw_events_panel() {
 
 	foreach ($posts_array AS $post) {
 
-		$nonce = wp_create_nonce("ajaxloadpost_nonce_".$post->ID);
+		$nonce = wp_create_nonce("ajaxloadpost_nonce_".$user->ID);
 
 		$nonce = "'".$nonce."'";
 

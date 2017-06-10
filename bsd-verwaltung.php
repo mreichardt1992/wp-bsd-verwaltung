@@ -195,7 +195,7 @@ add_action( 'init', 'custom_post_type', 0 );
  * add User to BSD table
  */
 function book_user_on_event() {
-	if ( !wp_verify_nonce( $_POST['nonce'], "ajaxloadpost_nonce_".$_POST['post_id'])) {
+	if ( !wp_verify_nonce( $_POST['nonce'], "ajaxloadpost_nonce_".$_POST['user_id'])) {
 		exit("Wrong nonce");
 	}
 
@@ -209,10 +209,12 @@ function book_user_on_event() {
 
 	$insert = $wpdb->insert( $table_name_bookings, $data);
 
-	return true;
+	echo $insert;
+
+	wp_die();
 }
-add_action( 'wp_ajax_nopriv_bookUserOnEvent', 'book_user_on_event' );
-add_action( 'wp_ajax_bookUserOnEvent', 'book_user_on_event' );
+add_action( 'wp_ajax_nopriv_book_user_on_event', 'book_user_on_event' );
+add_action( 'wp_ajax_book_user_on_event', 'book_user_on_event' );
 
 /*
  * unbook_user_from_event
@@ -220,7 +222,7 @@ add_action( 'wp_ajax_bookUserOnEvent', 'book_user_on_event' );
  * delete User from BSD table
  */
 function unbook_user_from_event() {
-	if ( !wp_verify_nonce( $_POST['nonce'], "ajaxloadpost_nonce_".$_POST['post_id'])) {
+	if ( !wp_verify_nonce( $_POST['nonce'], "ajaxloadpost_nonce_".$_POST['user_id'])) {
 		exit("Wrong nonce");
 	}
 
@@ -229,10 +231,12 @@ function unbook_user_from_event() {
 
 	$delete = $wpdb->delete( $table_name_bookings, array( 'user_id' => $_POST['user_id'], 'post_id' => $_POST['post_id'] ));
 
-	return true;
+	echo $delete;
+
+	wp_die();
 }
-add_action( 'wp_ajax_nopriv_unbookUserFromEvent', 'unbook_user_from_event' );
-add_action( 'wp_ajax_unbookUserFromEvent', 'unbook_user_from_event' );
+add_action( 'wp_ajax_nopriv_unbook_user_from_event', 'unbook_user_from_event' );
+add_action( 'wp_ajax_unbook_user_from_event', 'unbook_user_from_event' );
 
 /*
  * send_bsd_mail
