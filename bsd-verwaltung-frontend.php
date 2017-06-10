@@ -70,6 +70,13 @@ function draw_events_panel() {
 
 	$user = wp_get_current_user();
 
+	if ($user->data->ID == 0) {
+
+		echo __("Nur registrierte Nutzer d&uuml;rfen diesen Bereich sehen.", 'wp-bsd-verwaltung');
+
+		return;
+	}
+
 	$panel = '';
 
 	$args = array(
@@ -134,20 +141,20 @@ function draw_events_panel() {
 				$panel .= '<h3 class="widget-title">'.get_post_meta( $post->ID, '_bsd_begin_date', true ). ' | ' .$post_data->post_title.'</h3>';
 				$panel .= '<div id="store" class="widget-content">';
 					$panel .= '<p>';
-					$panel .=  '<b>Beginn: </b>' . get_post_meta( $post->ID, '_bsd_begin_time', true ) . " Uhr | ";
-					$panel .=  '<b>Ort: </b>' . get_post_meta( $post->ID, '_bsd_location', true ) . " | ";
-					$panel .=  '<b>Anzahl Posten: </b>' . get_post_meta( $post->ID, '_bsd_count_persons', true ) . " | ";
-			        $panel .=  '<b>Freie Posten: </b>' . $free_cnt_places . '<br><br>';
+					$panel .=  '<b>'.__("Beginn:", "wp-bsd-verwaltung").' </b>' . get_post_meta( $post->ID, '_bsd_begin_time', true ) . " Uhr | ";
+					$panel .=  '<b>'.__("Ort:", "wp-bsd-verwaltung").' </b>' . get_post_meta( $post->ID, '_bsd_location', true ) . " | ";
+					$panel .=  '<b>'.__("Anzahl Posten:", "wp-bsd-verwaltung").' </b>' . get_post_meta( $post->ID, '_bsd_count_persons', true ) . " | ";
+			        $panel .=  '<b>'.__("Freie Posten:", "wp-bsd-verwaltung").' </b>' . $free_cnt_places . '<br><br>';
 			        $panel .=  $post_data->post_content;
 			        $panel .= '</p>';
 
 			        if ($cnt_result == 0) {
-				        $panel .= '<div class="widget-footer"><button class="accept_bsd_button_'.$post->ID.'" onclick="book_user_on_event('.$user->ID.', '.$post->ID.', '.$nonce.');">Melden</button>';
+				        $panel .= '<div class="widget-footer"><button class="accept_bsd_button_'.$post->ID.'" onclick="book_user_on_event('.$user->ID.', '.$post->ID.', '.$nonce.');">'.__("Melden", "wp-bsd-verwaltung").'</button>';
 			        } else {
-				        $panel .= '<div class="widget-footer"><button class="accept_bsd_button_'.$post->ID.'" onclick="unbook_user_from_event('.$post->ID.', '.$user->ID.', '.$nonce.');">Meldung zur&uuml;ckziehen</button>';
+				        $panel .= '<div class="widget-footer"><button class="accept_bsd_button_'.$post->ID.'" onclick="unbook_user_from_event('.$post->ID.', '.$user->ID.', '.$nonce.');">'.__("Meldung zur&uuml;ckziehen", "wp-bsd-verwaltung").'</button>';
 			        }
 					if ($result[0]->is_fix == 1) {
-						$panel .= '&nbsp;<button id="is_fix_text_'.$post->ID.'" class="is_fix_text">Du bist f&uuml;r diesen Dienst gesetzt!</button>';
+						$panel .= '&nbsp;<button id="is_fix_text_'.$post->ID.'" class="is_fix_text">'.__("Du bist f&uuml;r diesen Dienst gesetzt!", "wp-bsd-verwaltung").'</button>';
 					}
 
 					$panel .= '</div>';
