@@ -202,7 +202,7 @@ function custom_bsds_column( $column, $post_id ) {
 			break;
 
 		case 'BSD Beginn' :
-			$terms = get_post_meta( $post_id, '_bsd_begin_date', true ) . " - " . get_post_meta( $post_id, '_bsd_begin_time', true ) . " Uhr";
+			$terms = date('d.m.Y', strtotime(get_post_meta( $post_id, '_bsd_begin_date', true ))) . " - " . get_post_meta( $post_id, '_bsd_begin_time', true ) . " Uhr";
 			if ( is_string( $terms ) )
 				echo $terms;
 			else

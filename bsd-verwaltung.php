@@ -66,16 +66,6 @@ function load_css() {
 add_action('wp_enqueue_scripts', 'load_css');
 
 /*
- * load-admin-js
- *
- * add plugin js files to backend
- */
-function load_admin_js() {
-	wp_enqueue_script( 'bsd_verwaltung_admin_script', plugins_url( '/js/admin_script.js' , __FILE__ ) );
-}
-add_action( 'admin_enqueue_scripts', 'load_admin_js' );
-
-/*
  * bsd_create_db
  *
  * create database table for plugin
