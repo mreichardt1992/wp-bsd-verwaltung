@@ -190,6 +190,84 @@ function custom_post_type() {
 add_action( 'init', 'custom_post_type', 0 );
 
 /*
+ * get_event_count_persons
+ *
+ *
+ */
+function get_event_count_persons($post_id = 0, $option = 'all') {
+
+	if ($post_id == 0) {
+		return 'no post_id';
+	}
+
+	if ($option == 'all') {
+
+		$cnt_data = count(get_event_data(0,$post_id,0, 'events_on_post'));
+
+	} elseif ($option == 'fix_only') {
+
+		$cnt_data = count(get_event_data(0,$post_id,1, 'events_on_post'));
+
+	} elseif ($option == 'difference') {
+		$cnt_data_all = get_post_meta( $post_id, '_bsd_count_persons', true );
+
+		$cnt_data_fix = count(get_event_data(0,$post_id,1, 'events_on_post'));
+
+		$cnt_data = $cnt_data_all - $cnt_data_fix;
+	}
+
+	return $cnt_data;
+}
+
+/*
+ * get_event_data
+ *
+ *
+ */
+function get_event_data($user_id = 0, $post_id = 0, $is_fix = false, $return_type = 'all_data') {
+	global $wpdb;
+	global $table_name_bookings;
+
+	$where = '';
+
+	switch ($return_type) {
+		case 'all_events':
+			$where = '';
+			break;
+
+		case 'events_on_user':
+			$where = $wpdb->prepare("user_id = %d", $user_id);
+			break;
+
+		case 'events_on_post':
+			$where = $wpdb->prepare("post_id = %d", $post_id);
+			break;
+
+		case 'event_on_post_and_user':
+			$where = $wpdb->prepare("post_id = %d AND user_id = %d", $post_id, $user_id);
+			break;
+	}
+
+	if ($is_fix == 1) {
+		$where .= " AND is_fix = 1";
+	}
+
+
+	$sql = "
+	        SELECT
+	            *
+	        FROM 
+	        	$table_name_bookings
+	      	WHERE
+	      		$where
+	    ";
+
+	$result = $wpdb->get_results($sql);
+
+	return $result;
+}
+
+/*
  * book_user_on_event
  *
  * add User to BSD table

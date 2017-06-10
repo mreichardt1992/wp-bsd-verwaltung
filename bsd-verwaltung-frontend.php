@@ -58,19 +58,9 @@ function draw_events_panel() {
 			continue;
 		}
 
-		$result = $wpdb->get_results($wpdb->prepare("
-	        SELECT
-	            *
-	        FROM 
-	        	$table_name_bookings
-	      	WHERE
-	      		post_id = %d AND 
-	      		user_id = %d
-	    ", $post->ID, $user->ID));
+		$free_cnt_places = get_event_count_persons($post->ID, $option = 'difference');
 
-		$cnt_result = count($result);
-
-		$free_cnt_places = 123;
+		$is_user_set_on_event = get_event_data($user->ID, $post->ID, false, $return_type = 'event_on_post_and_user');
 
 		$panel .= '<div class="widget">';
 			$panel .= '<div class="widget-inner">';
@@ -84,12 +74,12 @@ function draw_events_panel() {
 			        $panel .=  $post_data->post_content;
 			        $panel .= '</p>';
 
-			        if ($cnt_result == 0) {
+			        if (empty($is_user_set_on_event)) {
 				        $panel .= '<div class="widget-footer"><button class="accept_bsd_button_'.$post->ID.'" onclick="book_user_on_event('.$user->ID.', '.$post->ID.', '.$nonce.');">'.__("Melden", "wp-bsd-verwaltung").'</button>';
 			        } else {
 				        $panel .= '<div class="widget-footer"><button class="accept_bsd_button_'.$post->ID.'" onclick="unbook_user_from_event('.$post->ID.', '.$user->ID.', '.$nonce.');">'.__("Meldung zur&uuml;ckziehen", "wp-bsd-verwaltung").'</button>';
 			        }
-					if ($result[0]->is_fix == 1) {
+					if ($is_user_set_on_event[0]->is_fix == 1) {
 						$panel .= '&nbsp;<button id="is_fix_text_'.$post->ID.'" class="is_fix_text">'.__("Du bist f&uuml;r diesen Dienst gesetzt!", "wp-bsd-verwaltung").'</button>';
 					}
 
