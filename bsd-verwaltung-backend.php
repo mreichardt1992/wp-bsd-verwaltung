@@ -20,7 +20,7 @@ function bsd_build_data_field( $post ){
 	wp_nonce_field( basename( __FILE__ ), 'bsd_data_field_nonce' );
 
 	global $wpdb;
-	global $table_name_bookings;
+	global $bsd_table_name_bookings;
 
 	$current_location = get_post_meta( $post->ID, '_bsd_location', true );
 	$current_begin_date = date('d.m.Y', strtotime(get_post_meta( $post->ID, '_bsd_begin_date', true )));
@@ -39,25 +39,25 @@ function bsd_build_data_field( $post ){
 			<tr>
 				<td width="250px">
 					<label for="bsd_location">Veranstaltungsort</label><br>
-					<input type="text" name="bsd_location" id="bsd_location" value="<?php echo $current_location; ?>" />
+					<input type="text" name="bsd_location" id="bsd_location" value="<?php echo esc_html($current_location); ?>" />
 				</td>
 			</tr>
 			<tr>
 				<td>
 					<label for="bsd_begin_date">Datum (tt.mm.jjjj)</label><br>
-					<input type="text" name="bsd_begin_date" id="bsd_begin_date" value="<?php echo $current_begin_date; ?>" />
+					<input type="text" name="bsd_begin_date" id="bsd_begin_date" value="<?php echo esc_html($current_begin_date); ?>" />
 				</td>
 			</tr>
 			<tr>
 				<td>
 					<label for="bsd_begin_time">Uhrzeit (SS:MM)</label><br>
-					<input type="text" name="bsd_begin_time" id="bsd_begin_time" value="<?php echo $current_begin_time; ?>" />
+					<input type="text" name="bsd_begin_time" id="bsd_begin_time" value="<?php echo esc_html($current_begin_time); ?>" />
 				</td>
 			</tr>
 			<tr>
 				<td>
 					<label for="bsd_count_persons">Anzahl Teilnehmer</label><br>
-					<input type="text" name="bsd_count_persons" id="bsd_count_persons" value="<?php echo $current_count_persons; ?>" />
+					<input type="text" name="bsd_count_persons" id="bsd_count_persons" value="<?php echo esc_html($current_count_persons); ?>" />
 				</td>
 			</tr>
 		</table>
@@ -70,7 +70,7 @@ function bsd_build_data_field( $post ){
 					        SELECT
 					            *
 							FROM
-							  	$table_name_bookings
+							  	$bsd_table_name_bookings
 							WHERE
 								post_id = %d					        					    
 					    ", $post->ID));
@@ -85,7 +85,7 @@ function bsd_build_data_field( $post ){
 				$is_fix = 'checked';
             }
 
-			echo '<input type="checkbox" id="bsd_attendant_'.$user->data->ID.'" name="bsd_attendants[]" value="'.$user->data->ID.'" '.$is_fix.'><label for="bsd_attendant_'.$user->data->ID.'">'. $user->data->display_name .'</label><br>';
+			echo '<input type="checkbox" id="bsd_attendant_'.esc_html($user->data->ID).'" name="bsd_attendants[]" value="'.esc_html($user->data->ID).'" '.esc_html($is_fix).'><label for="bsd_attendant_'.esc_html($user->data->ID).'">'. esc_html($user->data->display_name) .'</label><br>';
 		}
 		?>
 
@@ -104,7 +104,7 @@ function bsd_save_data_field_data( $post_id ){
 	//echo "<pre>" . print_r($_REQUEST) . "</pre>";die();
 
     global $wpdb;
-	global $table_name_bookings;
+	global $bsd_table_name_bookings;
 
 	if ( !isset( $_POST['bsd_data_field_nonce'] ) || !wp_verify_nonce( $_POST['bsd_data_field_nonce'], basename( __FILE__ ) ) ){
 		return;
@@ -135,52 +135,57 @@ function bsd_save_data_field_data( $post_id ){
 		update_post_meta( $post_id, '_bsd_count_persons', sanitize_text_field( $_POST['bsd_count_persons'] ) );
 	}
 
-	if ( isset( $_REQUEST['bsd_attendants'] ) ) {
+	$bsd_attendants_set_fix = $_REQUEST['bsd_attendants'];
 
-		$result = $wpdb->get_results($wpdb->prepare("
-			SELECT
-		      *
-			FROM
-			  $table_name_bookings
-			WHERE
-			  post_id = %d AND 
-			  is_fix = 1
-		", $post_id));
+	$bsd_applied_users = $wpdb->get_results($wpdb->prepare("
+                SELECT
+                  *
+                FROM
+                  $bsd_table_name_bookings
+                WHERE
+                  post_id = %d
+            ", $post_id));
 
-		foreach ($result AS $userdata) {
-		    if (!in_array($userdata->user_id, $_REQUEST['bsd_attendants'])) {
-			    $wpdb->update( $table_name_bookings, array( 'is_fix' => 0 ), array( 'user_id' => $userdata->user_id, 'post_id' => $post_id ) );
+	foreach ($bsd_applied_users AS $bsd_applied_user) {
 
-			    send_bsd_mail($post_id, $userdata->user_id, 'reject_on_bsd_by_admin');
-            }
+		if (true === empty($bsd_attendants_set_fix)) {
+
+            $wpdb->update($bsd_table_name_bookings, array( 'is_fix' => 0, 'fix_mail_sent' => NULL ), array( 'post_id' => $post_id, 'user_id' => $bsd_applied_user->user_id ));
+            bsd_send_mail($post_id, $bsd_applied_user->user_id, 'reject_on_bsd_by_admin');
+
+        } elseif ( false === in_array($bsd_applied_user->user_id, $bsd_attendants_set_fix) && $bsd_applied_user->is_fix == 0 ) {
+
+		    continue;
+
+        } elseif ( false === in_array($bsd_applied_user->user_id, $bsd_attendants_set_fix) && $bsd_applied_user->is_fix == 1 ) {
+
+		    $wpdb->update($bsd_table_name_bookings, array( 'is_fix' => 0, 'fix_mail_sent' => NULL ), array( 'post_id' => $post_id, 'user_id' => $bsd_applied_user->user_id ));
+		    bsd_send_mail($post_id, $bsd_applied_user->user_id, 'reject_on_bsd_by_admin');
+
+        } elseif ( true === in_array($bsd_applied_user->user_id, $bsd_attendants_set_fix) && $bsd_applied_user->is_fix == 0 ) {
+
+	        $wpdb->update( $bsd_table_name_bookings, array( 'is_fix' => 1, 'fix_mail_sent' => date( 'Y-m-d H:s', time() )	), array( 'post_id' => $post_id, 'user_id' => $bsd_applied_user->user_id ) );
+		    bsd_send_mail( $post_id, $bsd_applied_user->user_id, 'agree_on_bsd' );
+
         }
-
-	    foreach ($_REQUEST['bsd_attendants'] AS $user_id) {
-		    $wpdb->update( $table_name_bookings, array( 'is_fix' => 1 ), array( 'user_id' => $user_id, 'post_id' => $post_id ) );
-
-		    send_bsd_mail($post_id, $user_id, 'agree_on_bsd');
-        }
-	} else {
-		$wpdb->update( $table_name_bookings, array( 'is_fix' => 0 ), array( 'post_id' => $post_id ) );
     }
-
 }
 add_action( 'save_post_bsds', 'bsd_save_data_field_data', 10, 2 );
 
 /*
- * set_custom_edit_bsds_columns
+ * bsd_set_custom_edit_bsds_columns
  *      $columns = ID of post
  *
  * set columns for overview-table of custom post type "BSDs"
  */
-function set_custom_edit_bsds_columns($columns) {
+function bsd_set_custom_edit_bsds_columns($columns) {
 	unset( $columns['bsds'] );
 	$columns['bsd_location'] = __( 'Ort', 'twentythirteen' );
 	$columns['bsd_begin_date'] = __( 'BSD Datum', 'twentythirteen' );
 
 	return $columns;
 }
-add_filter( 'manage_bsds_posts_columns', 'set_custom_edit_bsds_columns' );
+add_filter( 'manage_bsds_posts_columns', 'bsd_set_custom_edit_bsds_columns' );
 
 /*
  * custom_bsds_column
@@ -189,7 +194,7 @@ add_filter( 'manage_bsds_posts_columns', 'set_custom_edit_bsds_columns' );
  *
  * Add the data to the custom columns for the BSDs post type
  */
-function custom_bsds_column( $column, $post_id ) {
+function bsd_custom_bsds_column( $column, $post_id ) {
 
 	switch ( $column ) {
 
@@ -211,14 +216,14 @@ function custom_bsds_column( $column, $post_id ) {
 
 	}
 }
-add_action( 'manage_bsds_posts_custom_column' , 'custom_bsds_column', 10, 2 );
+add_action( 'manage_bsds_posts_custom_column' , 'bsd_custom_bsds_column', 10, 2 );
 
 /*
  * my_edit_bsds_columns
  *
  * Set names for columns of overview table
  */
-function my_edit_bsds_columns() {
+function bsd_edit_bsds_columns() {
 
 	$columns = array(
 		'cb' => '<input type="checkbox" />',
@@ -230,4 +235,4 @@ function my_edit_bsds_columns() {
 
 	return $columns;
 }
-add_filter( 'manage_edit-bsds_columns', 'my_edit_bsds_columns' ) ;
+add_filter( 'manage_edit-bsds_columns', 'bsd_edit_bsds_columns' ) ;
