@@ -25,8 +25,8 @@ along with {Plugin Name}. If not, see {License URI}.
 
 defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 
-global $table_name_bookings;
-$table_name_bookings = $wpdb->prefix . "bsd_bookings";
+global $bsd_table_name_bookings;
+$bsd_table_name_bookings = $wpdb->prefix . "bsd_bookings";
 
 include_once 'bsd-verwaltung-user.php';
 include_once 'bsd-verwaltung-frontend.php';
@@ -37,11 +37,11 @@ wp_register_script('prefix_jquery', 'https://code.jquery.com/jquery-3.2.1.min.js
 wp_enqueue_script('prefix_jquery');
 
 /*
- * load_js
+ * bsd_load_js
  *
  * add plugin js files to frontend
  */
-function load_js() {
+function bsd_load_js() {
 	wp_register_script( 'bsd_verwaltung_script', plugins_url( '/js/script.js' , __FILE__ ) );
 
 	$js_array = array(
@@ -53,17 +53,17 @@ function load_js() {
 
 	wp_enqueue_script( 'bsd_verwaltung_script' );
 }
-add_action( 'wp_enqueue_scripts', 'load_js' );
+add_action( 'wp_enqueue_scripts', 'bsd_load_js' );
 
 /*
- * load_css
+ * bsd_load_css
  *
  * add plugin css files to frontend
  */
-function load_css() {
+function bsd_load_css() {
 	wp_enqueue_style('bsd_verwaltung_style', plugins_url( '/css/styles.css' , __FILE__ ));
 }
-add_action('wp_enqueue_scripts', 'load_css');
+add_action('wp_enqueue_scripts', 'bsd_load_css');
 
 /*
  * bsd_create_db
@@ -83,6 +83,8 @@ function bsd_create_db() {
       `user_id` bigint(20) NOT NULL,
       `post_id` bigint(20) NOT NULL,
       `user_type` bigint(20) NOT NULL,
+      `is_fix` bigint(20) NOT NULL,
+      `fix_mail_sent` timestamp NULL DEFAULT NULL,
       PRIMARY KEY (`id`),
       FOREIGN KEY (user_id) REFERENCES " . $wpdb->prefix . "users (ID),
       FOREIGN KEY (post_id) REFERENCES " . $wpdb->prefix . "posts (ID)
@@ -94,11 +96,11 @@ function bsd_create_db() {
 register_activation_hook( __FILE__, 'bsd_create_db' );
 
 /*
- * create_posttype
+ * bsd_create_posttype
  *
  * registr custom post type "BSDs"
  */
-function create_posttype() {
+function bsd_create_posttype() {
 
 	register_post_type( 'BSDs',
 		// CPT Options
@@ -114,14 +116,14 @@ function create_posttype() {
 	);
 }
 // Hooking up our function to theme setup
-add_action( 'init', 'create_posttype' );
+add_action( 'init', 'bsd_create_posttype' );
 
 /*
- * custom_post_type
+ * bsd_set_custom_post_type_options
  *
  * set data/arguments on custom post type "BSDs"
  */
-function custom_post_type() {
+function bsd_set_custom_post_type_options() {
 
 	// Set UI labels for Custom Post Type
 	$labels = array(
@@ -177,14 +179,14 @@ function custom_post_type() {
  * Containing our post type registration is not
  * unnecessarily executed.
  */
-add_action( 'init', 'custom_post_type', 0 );
+add_action( 'init', 'bsd_set_custom_post_type_options', 0 );
 
 /*
- * get_event_count_persons
+ * bsd_get_event_count_persons
  *
  *
  */
-function get_event_count_persons($post_id = 0, $option = 'all') {
+function bsd_get_event_count_persons($post_id = 0, $option = 'all') {
 
 	if ($post_id == 0) {
 		return 'no post_id';
@@ -192,16 +194,16 @@ function get_event_count_persons($post_id = 0, $option = 'all') {
 
 	if ($option == 'all') {
 
-		$cnt_data = count(get_event_data(0,$post_id,0, 'events_on_post'));
+		$cnt_data = count(bsd_get_event_data(0,$post_id,0, 'events_on_post'));
 
 	} elseif ($option == 'fix_only') {
 
-		$cnt_data = count(get_event_data(0,$post_id,1, 'events_on_post'));
+		$cnt_data = count(bsd_get_event_data(0,$post_id,1, 'events_on_post'));
 
 	} elseif ($option == 'difference') {
 		$cnt_data_all = get_post_meta( $post_id, '_bsd_count_persons', true );
 
-		$cnt_data_fix = count(get_event_data(0,$post_id,1, 'events_on_post'));
+		$cnt_data_fix = count(bsd_get_event_data(0,$post_id,1, 'events_on_post'));
 
 		$cnt_data = $cnt_data_all - $cnt_data_fix;
 	}
@@ -210,13 +212,13 @@ function get_event_count_persons($post_id = 0, $option = 'all') {
 }
 
 /*
- * get_event_data
+ * bsd_get_event_data
  *
  *
  */
-function get_event_data($user_id = 0, $post_id = 0, $is_fix = false, $return_type = 'all_data') {
+function bsd_get_event_data($user_id = 0, $post_id = 0, $is_fix = false, $return_type = 'all_data') {
 	global $wpdb;
-	global $table_name_bookings;
+	global $bsd_table_name_bookings;
 
 	$where = '';
 
@@ -247,7 +249,7 @@ function get_event_data($user_id = 0, $post_id = 0, $is_fix = false, $return_typ
 	        SELECT
 	            *
 	        FROM 
-	        	$table_name_bookings
+	        	$bsd_table_name_bookings
 	      	WHERE
 	      		$where
 	    ";
@@ -258,112 +260,161 @@ function get_event_data($user_id = 0, $post_id = 0, $is_fix = false, $return_typ
 }
 
 /*
- * book_user_on_event
+ * bsd_book_user_on_event
  *
  * add User to BSD table
  */
-function book_user_on_event() {
+function bsd_book_user_on_event() {
 	if ( !wp_verify_nonce( $_POST['nonce'], "ajaxloadpost_nonce_".$_POST['user_id'])) {
 		exit("Wrong nonce");
 	}
 
 	global $wpdb;
-	global $table_name_bookings;
+	global $bsd_table_name_bookings;
 
 	$data = array(
 		'post_id' => $_POST['post_id'],
 		'user_id' => $_POST['user_id']
 	);
 
-	$insert = $wpdb->insert( $table_name_bookings, $data);
+	$insert = $wpdb->insert( $bsd_table_name_bookings, $data);
 
 	echo $insert;
 
 	wp_die();
 }
-add_action( 'wp_ajax_nopriv_book_user_on_event', 'book_user_on_event' );
-add_action( 'wp_ajax_book_user_on_event', 'book_user_on_event' );
+add_action( 'wp_ajax_nopriv_bsd_book_user_on_event', 'bsd_book_user_on_event' );
+add_action( 'wp_ajax_bsd_book_user_on_event', 'bsd_book_user_on_event' );
 
 /*
- * unbook_user_from_event
+ * bsd_unbook_user_from_event
  *
  * delete User from BSD table
  */
-function unbook_user_from_event() {
+function bsd_unbook_user_from_event() {
 	if ( !wp_verify_nonce( $_POST['nonce'], "ajaxloadpost_nonce_".$_POST['user_id'])) {
 		exit("Wrong nonce");
 	}
 
 	global $wpdb;
-	global $table_name_bookings;
+	global $bsd_table_name_bookings;
 
-	$delete = $wpdb->delete( $table_name_bookings, array( 'user_id' => $_POST['user_id'], 'post_id' => $_POST['post_id'] ));
+	$bsd_applied_user = $wpdb->get_results($wpdb->prepare("
+                SELECT
+                  *
+                FROM
+                  $bsd_table_name_bookings
+                WHERE
+                  post_id = %d AND 
+                  user_id = %d
+            ", $_POST['post_id'], $_POST['user_id']));
+
+	if ($bsd_applied_user[0]->is_fix == 1) {
+		bsd_send_mail($_POST['post_id'], $_POST['user_id'], 'reject_on_bsd_by_user');
+	}
+
+	$delete = $wpdb->delete( $bsd_table_name_bookings, array( 'user_id' => $_POST['user_id'], 'post_id' => $_POST['post_id'] ));
 
 	echo $delete;
 
 	wp_die();
 }
-add_action( 'wp_ajax_nopriv_unbook_user_from_event', 'unbook_user_from_event' );
-add_action( 'wp_ajax_unbook_user_from_event', 'unbook_user_from_event' );
+add_action( 'wp_ajax_nopriv_bsd_unbook_user_from_event', 'bsd_unbook_user_from_event' );
+add_action( 'wp_ajax_bsd_unbook_user_from_event', 'bsd_unbook_user_from_event' );
 
 /*
- * send_bsd_mail
+ * bsd_send_mail
  *      $post_id = ID of Post (BSD)
  *      $user_id = ID of WP User
  *      $mailtype = Type of mail
  *
  * Send Mail to User and/or Admin by interactions in Plugin, like attending on a BSD, rejecting a BSD etc.
  */
-function send_bsd_mail($post_id, $user_id, $mailtype) {
+function bsd_send_mail($post_id, $user_id, $mailtype) {
 
 	$headers = array(
 		'From' => 'BSD-Verwaltung <bsd@ffbn.de>'
 	);
 
+	$post_data = get_post( $post_id );
+
 	$user = get_userdata( $user_id );
 
-	$post_data = get_post( $post_id );
+	$admin = get_userdata( $post_data->post_author );
 
 	$to = $user->user_email;
 
 	switch ($mailtype) {
 		case 'agree_on_bsd':
 				$subject = 'Brandsicherheitsdienst - Zusage';
-				$message = 'Du wurdest für einen Brandsicherheitsdienst gesetzt. Folgend findest du die Infos zum betreffenden Dienst:<br><br>';
+				$message = 'Hallo '. $user->display_name .', <br><br>';
+				$message .= 'Du wurdest für einen Brandsicherheitsdienst gesetzt. Folgend findest du die Infos zum betreffenden Dienst:<br><br>';
 				$message .= $post_data->post_title . '<br>';
-				$message .= 'Datum: ' . get_post_meta( $post_id, '_bsd_begin_date', true ) . '<br>';
+				$message .= 'Datum: ' . date('d.m.Y', strtotime(get_post_meta( $post_id, '_bsd_begin_date', true ))) . '<br>';
 				$message .= 'Beginn: ' . get_post_meta( $post_id, '_bsd_begin_time', true ) . ' Uhr<br>';
 				$message .= 'Anzahl Posten: ' . get_post_meta( $post_id, '_bsd_count_persons', true ) . '<br>';
 				$message .= 'Weitere Infos: ' . $post_data->post_content . '<br><br>';
 				$message .= 'Diese E-Mail wurde automatisch generiert, bitte antworte nicht darauf.';
+
+				add_filter( 'wp_mail_content_type', 'bsd_set_html_mail_content_type' );
+				wp_mail( $to, $subject, $message, $headers);
+				remove_filter( 'wp_mail_content_type', 'bsd_set_html_mail_content_type' );
+
 			break;
 		case 'reject_on_bsd_by_admin':
 				$subject = 'Brandsicherheitsdienst - Absage';
-				$message = 'Du wurdest von einem Brandsicherheitsdienst abgezogen, für den du gesetzt warst. Folgend findest du die Infos zum betreffenden Dienst:<br><br>';
+				$message = 'Hallo '. $user->display_name .', <br><br>';
+				$message .= 'Du wurdest von einem Brandsicherheitsdienst abgezogen, für den du gesetzt warst. Folgend findest du die Infos zum betreffenden Dienst:<br><br>';
 				$message .= $post_data->post_title . '<br>';
-				$message .= 'Datum: ' . get_post_meta( $post_id, '_bsd_begin_date', true ) . '<br>';
+				$message .= 'Datum: ' . date('d.m.Y', strtotime(get_post_meta( $post_id, '_bsd_begin_date', true ))) . '<br>';
 				$message .= 'Beginn: ' . get_post_meta( $post_id, '_bsd_begin_time', true ) . ' Uhr<br>';
 				$message .= 'Anzahl Posten: ' . get_post_meta( $post_id, '_bsd_count_persons', true ) . '<br>';
 				$message .= 'Weitere Infos: ' . $post_data->post_content . '<br><br>';
 				$message .= 'Diese E-Mail wurde automatisch generiert, bitte antworte nicht darauf.';
+
+				add_filter( 'wp_mail_content_type', 'bsd_set_html_mail_content_type' );
+				wp_mail( $to, $subject, $message, $headers);
+				remove_filter( 'wp_mail_content_type', 'bsd_set_html_mail_content_type' );
+
 			break;
 		case 'reject_on_bsd_by_user':
-				$subject = 'Brandsicherheitsdienst - Absage';
-				$message = 'Du hast dich von einem Brandsicherheitsdienst zurückgezogen, für den du bereits gesetzt warst. Folgend findest du die Infos zum betreffenden Dienst:<br><br>';
-				$message .= $post_data->post_title . '<br>';
-				$message .= 'Datum: ' . get_post_meta( $post_id, '_bsd_begin_date', true ) . '<br>';
-				$message .= 'Beginn: ' . get_post_meta( $post_id, '_bsd_begin_time', true ) . ' Uhr<br>';
-				$message .= 'Anzahl Posten: ' . get_post_meta( $post_id, '_bsd_count_persons', true ) . '<br>';
-				$message .= 'Weitere Infos: ' . $post_data->post_content . '<br><br>';
-				$message .= 'Diese E-Mail wurde automatisch generiert, bitte antworte nicht darauf.';
+			//mail to user
+
+			$subject = 'Brandsicherheitsdienst - Absage';
+			$message = 'Hallo '. $user->display_name .', <br><br>';
+			$message .= 'Du hast dich von einem Brandsicherheitsdienst zurückgezogen, für den du bereits gesetzt warst. Folgend findest du die Infos zum betreffenden Dienst:<br><br>';
+			$message .= $post_data->post_title . '<br>';
+			$message .= 'Datum: ' . date('d.m.Y', strtotime(get_post_meta( $post_id, '_bsd_begin_date', true ))) . '<br>';
+			$message .= 'Beginn: ' . get_post_meta( $post_id, '_bsd_begin_time', true ) . ' Uhr<br>';
+			$message .= 'Anzahl Posten: ' . get_post_meta( $post_id, '_bsd_count_persons', true ) . '<br>';
+			$message .= 'Weitere Infos: ' . $post_data->post_content . '<br><br>';
+			$message .= 'Diese E-Mail wurde automatisch generiert, bitte antworte nicht darauf.';
+
+			add_filter( 'wp_mail_content_type', 'bsd_set_html_mail_content_type' );
+			wp_mail( $to, $subject, $message, $headers);
+			remove_filter( 'wp_mail_content_type', 'bsd_set_html_mail_content_type' );
+
+
+			//mail to admin
+
+			$subject = 'Brandsicherheitsdienst - User-Absage';
+			$message = 'Hallo '. $admin->display_name .', <br><br>';
+			$message .= 'Der User "'.$user->display_name.'" hat sich von einem Brandsicherheitsdienst zurückgezogen, für den er bereits gesetzt war. Folgend findest du die Infos zum betreffenden Dienst:<br><br>';
+			$message .= $post_data->post_title . '<br>';
+			$message .= 'Datum: ' .  date('d.m.Y', strtotime(get_post_meta( $post_id, '_bsd_begin_date', true ))) . '<br>';
+			$message .= 'Beginn: ' . get_post_meta( $post_id, '_bsd_begin_time', true ) . ' Uhr<br>';
+			$message .= 'Anzahl Posten: ' . get_post_meta( $post_id, '_bsd_count_persons', true ) . '<br>';
+			$message .= 'Weitere Infos: ' . $post_data->post_content . '<br><br>';
+			$message .= 'Diese E-Mail wurde automatisch generiert, bitte antworte nicht darauf.';
+
+			$to = $admin->user_email;
+
+			add_filter( 'wp_mail_content_type', 'bsd_set_html_mail_content_type' );
+			wp_mail( $to, $subject, $message, $headers);
+			remove_filter( 'wp_mail_content_type', 'bsd_set_html_mail_content_type' );
+
 			break;
 	}
-
-	add_filter( 'wp_mail_content_type', 'wpdocs_set_html_mail_content_type' );
-
-	wp_mail( $to, $subject, $message, $headers);
-
-	remove_filter( 'wp_mail_content_type', 'wpdocs_set_html_mail_content_type' );
 }
 
 /*
@@ -371,6 +422,6 @@ function send_bsd_mail($post_id, $user_id, $mailtype) {
  *
  * set the mail content type to text/html
  */
-function wpdocs_set_html_mail_content_type() {
+function bsd_set_html_mail_content_type() {
 	return 'text/html';
 }

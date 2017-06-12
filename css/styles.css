@@ -1,22 +1,27 @@
-#secondary .widget-title {
+#bsd-panels .bsd-widget-title {
     margin: 0;
     font-size: 22px;
     background: #eee;
     padding: 10px;
     cursor: pointer;
 }
-#secondary .widget .widget-content {
+
+.bsd-widget {
+    margin-bottom: 10px;
+}
+
+#bsd-panels .bsd-widget .bsd-widget-content {
     display: none;
     border: 1px solid gray;
     padding: 10px;
 }
 
-#secondary .widget .widget-content .widget-footer {
+#bsd-panels .bsd-widget .bsd-widget-content .bsd-widget-footer {
     border-top: 1px solid gray;
     padding: 10px 10px 0px 0px;
 }
 
-#secondary .widget.active .widget-title, #secondary .widget.active ul {
+#bsd-panels .bsd-widget.active .bsd-widget-title, #bsd-panels .bsd-widget.active ul {
     background: #666;
     color: #fff;
 }

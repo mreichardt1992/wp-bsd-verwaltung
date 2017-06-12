@@ -1,8 +1,6 @@
 <?php
 
-function draw_events_panel() {
-	global $wpdb;
-	global $table_name_bookings;
+function bsd_draw_events_panel() {
 
 	$user = wp_get_current_user();
 
@@ -38,7 +36,7 @@ function draw_events_panel() {
 
 	$x = 1;
 
-	$panel .= '<aside id="secondary" class="col-md-3 col-sm-3">';
+	$panel .= '<aside id="bsd-panels" class="col-md-3 col-sm-3">';
 	$panel .= '<div class="row">';
 
 	foreach ($posts_array AS $post) {
@@ -57,14 +55,14 @@ function draw_events_panel() {
 			continue;
 		}
 
-		$free_cnt_places = get_event_count_persons($post->ID, $option = 'difference');
+		$free_cnt_places = bsd_get_event_count_persons($post->ID, $option = 'difference');
 
-		$is_user_set_on_event = get_event_data($user->ID, $post->ID, false, $return_type = 'event_on_post_and_user');
+		$is_user_set_on_event = bsd_get_event_data($user->ID, $post->ID, false, $return_type = 'event_on_post_and_user');
 
-		$panel .= '<div class="widget">';
-			$panel .= '<div class="widget-inner">';
-				$panel .= '<h3 class="widget-title">'.date('d.m.Y', $bsd_date). ' | ' .$post_data->post_title.'</h3>';
-				$panel .= '<div id="store" class="widget-content">';
+		$panel .= '<div class="bsd-widget">';
+			$panel .= '<div class="bsd-widget-inner">';
+				$panel .= '<h4 class="bsd-widget-title">'.date('d.m.Y', $bsd_date). ' | ' .$post_data->post_title.'</h4>';
+				$panel .= '<div id="store" class="bsd-widget-content">';
 					$panel .= '<p>';
 					$panel .=  '<b>'.__("Beginn:", "wp-bsd-verwaltung").' </b>' . get_post_meta( $post->ID, '_bsd_begin_time', true ) . " Uhr | ";
 					$panel .=  '<b>'.__("Ort:", "wp-bsd-verwaltung").' </b>' . get_post_meta( $post->ID, '_bsd_location', true ) . " | ";
@@ -74,9 +72,9 @@ function draw_events_panel() {
 			        $panel .= '</p>';
 
 			        if (empty($is_user_set_on_event)) {
-				        $panel .= '<div class="widget-footer"><button class="accept_bsd_button_'.$post->ID.'" onclick="book_user_on_event('.$user->ID.', '.$post->ID.', '.$nonce.');">'.__("Melden", "wp-bsd-verwaltung").'</button>';
+				        $panel .= '<div class="bsd-widget-footer"><button class="accept_bsd_button_'.$post->ID.'" onclick="bsd_book_user_on_event('.$user->ID.', '.$post->ID.', '.$nonce.');">'.__("Melden", "wp-bsd-verwaltung").'</button>';
 			        } else {
-				        $panel .= '<div class="widget-footer"><button class="accept_bsd_button_'.$post->ID.'" onclick="unbook_user_from_event('.$post->ID.', '.$user->ID.', '.$nonce.');">'.__("Meldung zur&uuml;ckziehen", "wp-bsd-verwaltung").'</button>';
+				        $panel .= '<div class="bsd-widget-footer"><button class="accept_bsd_button_'.$post->ID.'" onclick="bsd_unbook_user_from_event('.$post->ID.', '.$user->ID.', '.$nonce.');">'.__("Meldung zur&uuml;ckziehen", "wp-bsd-verwaltung").'</button>';
 			        }
 					if ($is_user_set_on_event[0]->is_fix == 1) {
 						$panel .= '&nbsp;<button id="is_fix_text_'.$post->ID.'" class="is_fix_text">'.__("Du bist f&uuml;r diesen Dienst gesetzt!", "wp-bsd-verwaltung").'</button>';
@@ -96,4 +94,4 @@ function draw_events_panel() {
 	return $panel;
 
 }
-add_shortcode('BSD_Panel', 'draw_events_panel');
+add_shortcode('BSD_Panel', 'bsd_draw_events_panel');
