@@ -4,7 +4,7 @@ function bsd_draw_events_panel() {
 
 	$user = wp_get_current_user();
 
-	if ($user->data->ID == 0) {
+	if ( 0 == $user->data->ID ) {
 
 		echo __("Nur registrierte Nutzer d&uuml;rfen diesen Bereich sehen.", 'wp-bsd-verwaltung');
 
@@ -39,9 +39,9 @@ function bsd_draw_events_panel() {
 	$panel .= '<aside id="bsd-panels" class="col-md-3 col-sm-3">';
 	$panel .= '<div class="row">';
 
-	foreach ($posts_array AS $post) {
+	foreach ( $posts_array AS $post ) {
 
-		$nonce = wp_create_nonce("ajaxloadpost_nonce_".$user->ID);
+		$nonce = wp_create_nonce( "ajaxloadpost_nonce_".$user->ID );
 
 		$nonce = "'".$nonce."'";
 
@@ -49,35 +49,36 @@ function bsd_draw_events_panel() {
 
 		$date = strtotime(date('d.m.Y', time()));
 
-		$bsd_date = strtotime(date('d.m.Y', strtotime(get_post_meta( $post->ID, '_bsd_begin_date', true ))));
+		$bsd_date = strtotime(date('d.m.Y', strtotime( get_post_meta( $post->ID, '_bsd_begin_date', true ))) );
 
-		if ($bsd_date < $date) {
+		if ( $bsd_date < $date ) {
 			continue;
 		}
 
-		$free_cnt_places = bsd_get_event_count_persons($post->ID, $option = 'difference');
+		$free_cnt_places = bsd_get_event_count_persons( $post->ID, $option = 'difference' );
 
-		$is_user_set_on_event = bsd_get_event_data($user->ID, $post->ID, false, $return_type = 'event_on_post_and_user');
+		$is_user_set_on_event = bsd_get_event_data( $user->ID, $post->ID, false, $return_type = 'event_on_post_and_user' );
 
 		$panel .= '<div class="bsd-widget">';
 			$panel .= '<div class="bsd-widget-inner">';
-				$panel .= '<h4 class="bsd-widget-title">'.date('d.m.Y', $bsd_date). ' | ' .$post_data->post_title.'</h4>';
+				$panel .= '<h4 class="bsd-widget-title">' . esc_html( date('d.m.Y', $bsd_date) ). ' | ' .esc_html( $post_data->post_title ) . '</h4>';
 				$panel .= '<div id="store" class="bsd-widget-content">';
 					$panel .= '<p>';
-					$panel .=  '<b>'.__("Beginn:", "wp-bsd-verwaltung").' </b>' . get_post_meta( $post->ID, '_bsd_begin_time', true ) . " Uhr | ";
-					$panel .=  '<b>'.__("Ort:", "wp-bsd-verwaltung").' </b>' . get_post_meta( $post->ID, '_bsd_location', true ) . " | ";
-					$panel .=  '<b>'.__("Anzahl Posten:", "wp-bsd-verwaltung").' </b>' . get_post_meta( $post->ID, '_bsd_count_persons', true ) . " | ";
-			        $panel .=  '<b>'.__("Freie Posten:", "wp-bsd-verwaltung").' </b>' . $free_cnt_places . '<br><br>';
+					$panel .=  '<b>' . __( "Beginn:", "wp-bsd-verwaltung" ) . ' </b>' . esc_html( get_post_meta( $post->ID, '_bsd_begin_time', true ) ) . " Uhr | ";
+					$panel .=  '<b>' . __( "Ort:", "wp-bsd-verwaltung" ) . ' </b>' . esc_html( get_post_meta( $post->ID, '_bsd_location', true ) ) . " | ";
+					$panel .=  '<b>' . __( "Anzahl Posten:", "wp-bsd-verwaltung" ) . ' </b>' . esc_html( get_post_meta( $post->ID, '_bsd_count_persons', true ) ) . " | ";
+			        $panel .=  '<b>' . __( "Freie Posten:", "wp-bsd-verwaltung" ) . ' </b>' . esc_html( $free_cnt_places ) . '<br /><br />';
 			        $panel .=  $post_data->post_content;
 			        $panel .= '</p>';
 
-			        if (empty($is_user_set_on_event)) {
-				        $panel .= '<div class="bsd-widget-footer"><button class="accept_bsd_button_'.$post->ID.'" onclick="bsd_book_user_on_event('.$user->ID.', '.$post->ID.', '.$nonce.');">'.__("Melden", "wp-bsd-verwaltung").'</button>';
+			        if ( true === empty($is_user_set_on_event) ) {
+				        $panel .= '<div class="bsd-widget-footer"><button class="accept_bsd_button_' . esc_attr( $post->ID ) . '" onclick="bsd_book_user_on_event( ' . esc_attr( $user->ID ) . ', ' . esc_attr( $post->ID ) . ', ' . esc_attr( $nonce ) . ' );">' . __( "Melden", "wp-bsd-verwaltung" ) . '</button>';
 			        } else {
-				        $panel .= '<div class="bsd-widget-footer"><button class="accept_bsd_button_'.$post->ID.'" onclick="bsd_unbook_user_from_event('.$post->ID.', '.$user->ID.', '.$nonce.');">'.__("Meldung zur&uuml;ckziehen", "wp-bsd-verwaltung").'</button>';
+				        $panel .= '<div class="bsd-widget-footer"><button class="accept_bsd_button_' . esc_attr($post->ID) . '" onclick="bsd_unbook_user_from_event( ' . esc_attr( $post->ID ) . ', ' . esc_attr( $user->ID ) . ', ' . esc_attr( $nonce ) . ' );">' . __( "Meldung zur&uuml;ckziehen", "wp-bsd-verwaltung" ) . '</button>';
 			        }
-					if ($is_user_set_on_event[0]->is_fix == 1) {
-						$panel .= '&nbsp;<button id="is_fix_text_'.$post->ID.'" class="is_fix_text">'.__("Du bist f&uuml;r diesen Dienst gesetzt!", "wp-bsd-verwaltung").'</button>';
+
+					if ( 1 == $is_user_set_on_event[0]->is_fix ) {
+						$panel .= '&nbsp;<button id="is-fix-text-' . esc_attr( $post->ID ) . '" class="is-fix-text">' . __( "Du bist f&uuml;r diesen Dienst gesetzt!", "wp-bsd-verwaltung" ) . '</button>';
 					}
 
 					$panel .= '</div>';

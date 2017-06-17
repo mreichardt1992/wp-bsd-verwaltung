@@ -1,4 +1,5 @@
-#bsd-panels .bsd-widget-title {
+#bsd-panels
+.bsd-widget-title {
     margin: 0;
     font-size: 22px;
     background: #eee;
@@ -10,23 +11,36 @@
     margin-bottom: 10px;
 }
 
-#bsd-panels .bsd-widget .bsd-widget-content {
+#bsd-panels
+.bsd-widget
+.bsd-widget-content {
     display: none;
     border: 1px solid gray;
     padding: 10px;
 }
 
-#bsd-panels .bsd-widget .bsd-widget-content .bsd-widget-footer {
+#bsd-panels
+.bsd-widget
+.bsd-widget-content
+.bsd-widget-footer {
     border-top: 1px solid gray;
-    padding: 10px 10px 0px 0px;
+    padding: 10px 10px 0 0;
 }
 
-#bsd-panels .bsd-widget.active .bsd-widget-title, #bsd-panels .bsd-widget.active ul {
+#bsd-panels
+.bsd-widget.active
+.bsd-widget-title,
+#bsd-panels
+.bsd-widget.active ul {
     background: #666;
     color: #fff;
 }
 
-.is_fix_text, .is_fix_text:hover, .is_fix_text:active, .is_fix_text:enabled, .is_fix_text:focus {
+.is-fix-text,
+.is-fix-text:hover,
+.is-fix-text:active,
+.is-fix-text:enabled,
+.is-fix-text:focus {
     background: green none repeat scroll 0 0;
     cursor: default;
 }

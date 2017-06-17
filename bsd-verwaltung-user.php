@@ -1,21 +1,20 @@
 <?php
 
 
-add_action( 'show_user_profile', 'extra_user_profile_fields' );
-add_action( 'edit_user_profile', 'extra_user_profile_fields' );
+add_action( 'show_user_profile', 'bsd_extra_user_profile_fields' );
+add_action( 'edit_user_profile', 'bsd_extra_user_profile_fields' );
 
-function extra_user_profile_fields( $user ) { ?>
+function bsd_extra_user_profile_fields( $user ) { ?>
     <h3>BSD Informationen</h3>
 
 	<?php
         $leader = get_the_author_meta( 'bsd_leader', $user->ID );
 
-        $is_leader = 'Test';
+        $is_leader = '';
         if ($leader == 1) {
-	        $is_leader = 'checked';
+	        $is_leader = esc_attr('checked="checked"');
         }
     ?>
-
 
     <table class="form-table">
         <tr>
@@ -30,10 +29,10 @@ function extra_user_profile_fields( $user ) { ?>
 <?php }
 
 
-add_action( 'personal_options_update', 'save_extra_user_profile_fields' );
-add_action( 'edit_user_profile_update', 'save_extra_user_profile_fields' );
+add_action( 'personal_options_update', 'bsd_save_extra_user_profile_fields' );
+add_action( 'edit_user_profile_update', 'bsd_save_extra_user_profile_fields' );
 
-function save_extra_user_profile_fields( $user_id ) {
+function bsd_save_extra_user_profile_fields( $user_id ) {
 	if ( !current_user_can( 'edit_user', $user_id ) ) {
 		return false;
 	}
