@@ -28,12 +28,13 @@ defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 global $bsd_table_name_bookings;
 $bsd_table_name_bookings = $wpdb->prefix . "bsd_bookings";
 
+// load jquery
+wp_enqueue_script('jquery');
+
 include_once 'bsd-verwaltung-user.php';
 include_once 'bsd-verwaltung-frontend.php';
 include_once 'bsd-verwaltung-backend.php';
-
-// load jquery
-wp_enqueue_script('jquery');
+include_once 'bsd-verwaltung-settings.php';
 
 /*
  * bsd_load_js
@@ -370,14 +371,17 @@ function bsd_send_mail( $post_id, $user_id, $mailtype ) {
 	switch ( $mailtype ) {
 		case 'agree_on_bsd':
 				$subject = 'Brandsicherheitsdienst - Zusage';
-				$message = 'Hallo ' .  $user->display_name  . ', <br /><br />';
-				$message .= 'Du wurdest für einen Brandsicherheitsdienst gesetzt. Folgend findest du die Infos zum betreffenden Dienst:<br /><br />';
-				$message .= $post_data->post_title . '<br />';
-				$message .= 'Datum: ' . date('d.m.Y', strtotime( get_post_meta( $post_id, '_bsd_begin_date', true ) ) ) . '<br />';
-				$message .= 'Beginn: ' . get_post_meta( $post_id, '_bsd_begin_time', true ) . ' Uhr<br />';
-				$message .= 'Anzahl Posten: ' . get_post_meta( $post_id, '_bsd_count_persons', true ) . '<br />';
-				$message .= 'Weitere Infos: ' . $post_data->post_content . '<br /><br />';
-				$message .= 'Diese E-Mail wurde automatisch generiert, bitte antworte nicht darauf . ';
+
+				$message = get_option( $mailtype );
+
+				$message = str_replace('[user_name]', $user->display_name, $message);
+				$message = str_replace('[bsd_title]', $post_data->post_title, $message);
+				$message = str_replace('[bsd_datum]', date('d.m.Y', strtotime( get_post_meta( $post_id, '_bsd_begin_date', true ) ) ), $message);
+				$message = str_replace('[bsd_uhrzeit]', get_post_meta( $post_id, '_bsd_begin_time', true ), $message);
+				$message = str_replace('[bsd_anzahl_personen]', get_post_meta( $post_id, '_bsd_count_persons', true ), $message);
+				$message = str_replace('[bsd_info]', $post_data->post_content, $message);
+
+				$message = nl2br( esc_html( $message ), false );
 
 				add_filter( 'wp_mail_content_type', 'bsd_set_html_mail_content_type' );
 				wp_mail( $to, $subject, $message, $headers );
@@ -386,14 +390,17 @@ function bsd_send_mail( $post_id, $user_id, $mailtype ) {
 			break;
 		case 'reject_on_bsd_by_admin':
 				$subject = 'Brandsicherheitsdienst - Absage';
-				$message = 'Hallo ' .  $user->display_name  . ', <br /><br />';
-				$message .= 'Du wurdest von einem Brandsicherheitsdienst abgezogen, für den du gesetzt warst. Folgend findest du die Infos zum betreffenden Dienst:<br /><br />';
-				$message .= $post_data->post_title . '<br />';
-				$message .= 'Datum: ' . date('d.m.Y', strtotime( get_post_meta( $post_id, '_bsd_begin_date', true ) ) ) . '<br />';
-				$message .= 'Beginn: ' . get_post_meta( $post_id, '_bsd_begin_time', true ) . ' Uhr<br />';
-				$message .= 'Anzahl Posten: ' . get_post_meta( $post_id, '_bsd_count_persons', true ) . '<br />';
-				$message .= 'Weitere Infos: ' . $post_data->post_content . '<br /><br />';
-				$message .= 'Diese E-Mail wurde automatisch generiert, bitte antworte nicht darauf . ';
+
+				$message = get_option( $mailtype );
+
+				$message = str_replace('[user_name]', $user->display_name, $message);
+				$message = str_replace('[bsd_title]', $post_data->post_title, $message);
+				$message = str_replace('[bsd_datum]', date('d.m.Y', strtotime( get_post_meta( $post_id, '_bsd_begin_date', true ) ) ), $message);
+				$message = str_replace('[bsd_uhrzeit]', get_post_meta( $post_id, '_bsd_begin_time', true ), $message);
+				$message = str_replace('[bsd_anzahl_personen]', get_post_meta( $post_id, '_bsd_count_persons', true ), $message);
+				$message = str_replace('[bsd_info]', $post_data->post_content, $message);
+
+				$message = nl2br( esc_html( $message ), false );
 
 				add_filter( 'wp_mail_content_type', 'bsd_set_html_mail_content_type' );
 				wp_mail( $to, $subject, $message, $headers);
@@ -403,32 +410,18 @@ function bsd_send_mail( $post_id, $user_id, $mailtype ) {
 		case 'reject_on_bsd_by_user':
 			//mail to user
 
-			$subject = 'Brandsicherheitsdienst - Absage';
-			$message = 'Hallo ' .  $user->display_name  . ', <br /><br />';
-			$message .= 'Du hast dich von einem Brandsicherheitsdienst zurückgezogen, für den du bereits gesetzt warst. Folgend findest du die Infos zum betreffenden Dienst:<br /><br />';
-			$message .= $post_data->post_title . '<br />';
-			$message .= 'Datum: ' . date('d.m.Y', strtotime( get_post_meta( $post_id, '_bsd_begin_date', true ) ) ) . '<br />';
-			$message .= 'Beginn: ' . get_post_meta( $post_id, '_bsd_begin_time', true ) . ' Uhr<br />';
-			$message .= 'Anzahl Posten: ' . get_post_meta( $post_id, '_bsd_count_persons', true ) . '<br />';
-			$message .= 'Weitere Infos: ' . $post_data->post_content . '<br /><br />';
-			$message .= 'Diese E-Mail wurde automatisch generiert, bitte antworte nicht darauf . ';
-
-			add_filter( 'wp_mail_content_type', 'bsd_set_html_mail_content_type' );
-			wp_mail( $to, $subject, $message, $headers);
-			remove_filter( 'wp_mail_content_type', 'bsd_set_html_mail_content_type' );
-
-
-			//mail to admin
-
 			$subject = 'Brandsicherheitsdienst - User-Absage';
-			$message = 'Hallo ' .  $admin->display_name  . ', <br /><br />';
-			$message .= 'Der User "' . $user->display_name . '" hat sich von einem Brandsicherheitsdienst zurückgezogen, für den er bereits gesetzt war. Folgend findest du die Infos zum betreffenden Dienst:<br /><br />';
-			$message .= $post_data->post_title . '<br />';
-			$message .= 'Datum: ' .  date('d.m.Y', strtotime( get_post_meta( $post_id, '_bsd_begin_date', true ) ) ) . '<br />';
-			$message .= 'Beginn: ' . get_post_meta( $post_id, '_bsd_begin_time', true ) . ' Uhr<br />';
-			$message .= 'Anzahl Posten: ' . get_post_meta( $post_id, '_bsd_count_persons', true ) . '<br />';
-			$message .= 'Weitere Infos: ' . $post_data->post_content . '<br /><br />';
-			$message .= 'Diese E-Mail wurde automatisch generiert, bitte antworte nicht darauf . ';
+
+			$message = get_option( $mailtype );
+
+			$message = str_replace('[user_name]', $admin->display_name, $message);
+			$message = str_replace('[bsd_title]', $post_data->post_title, $message);
+			$message = str_replace('[bsd_datum]', date('d.m.Y', strtotime( get_post_meta( $post_id, '_bsd_begin_date', true ) ) ), $message);
+			$message = str_replace('[bsd_uhrzeit]', get_post_meta( $post_id, '_bsd_begin_time', true ), $message);
+			$message = str_replace('[bsd_anzahl_personen]', get_post_meta( $post_id, '_bsd_count_persons', true ), $message);
+			$message = str_replace('[bsd_info]', $post_data->post_content, $message);
+
+			$message = nl2br( esc_html( $message ), false );
 
 			$to = $admin->user_email;
 
@@ -448,3 +441,4 @@ function bsd_send_mail( $post_id, $user_id, $mailtype ) {
 function bsd_set_html_mail_content_type() {
 	return 'text/html';
 }
+
