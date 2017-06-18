@@ -36,6 +36,30 @@ function bsd_draw_events_panel() {
 
 	$x = 1;
 
+	if (true === empty( get_option( 'color_picker_panel_header' ) )) {
+		$color_panel_header = '#eee';
+	} else {
+		$color_panel_header = get_option( 'color_picker_panel_header' );
+	}
+
+	if (true === empty( get_option( 'color_picker_panel_header_active' ) )) {
+		$color_panel_header_active = '#666';
+	} else {
+		$color_panel_header_active = get_option( 'color_picker_panel_header_active' );
+	}
+
+	$panel .= '
+		<style>
+		#bsd-panels .bsd-widget-title {
+			background: ' . esc_attr( $color_panel_header ) . ' none repeat scroll 0 0 !important;
+		}
+		
+		#bsd-panels .bsd-widget.active .bsd-widget-title, #bsd-panels .bsd-widget.active ul {
+			background: ' . esc_attr( $color_panel_header_active ) . ' none repeat scroll 0 0 !important;
+		}
+		</style>
+	';
+
 	$panel .= '<aside id="bsd-panels" class="col-md-3 col-sm-3">';
 	$panel .= '<div class="row">';
 

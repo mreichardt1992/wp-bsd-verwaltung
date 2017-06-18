@@ -15,6 +15,8 @@ function bsd_register_plugin_settings() {
 	register_setting( 'bsd-plugin-settings-group', 'agree_on_bsd', 'bsd_mail_agree_on_bsd_validate' );
 	register_setting( 'bsd-plugin-settings-group', 'reject_on_bsd_by_admin', 'bsd_mail_reject_on_bsd_by_admin_validate' );
 	register_setting( 'bsd-plugin-settings-group', 'reject_on_bsd_by_user', 'bsd_mail_reject_on_bsd_by_user_validate' );
+	register_setting( 'bsd-plugin-settings-group', 'color_picker_panel_header', 'bsd_color_picker_panel_header_validate' );
+	register_setting( 'bsd-plugin-settings-group', 'color_picker_panel_header_active', 'bsd_color_picker_panel_header_active_validate' );
 }
 
 function bsd_options_do_page() {
@@ -26,25 +28,55 @@ function bsd_options_do_page() {
 			<?php screen_icon(); ?>
 			<h1 class="wp-heading-inline"><?php _e( 'BSD Einstellungen', 'twentythirteen' ); ?></h1>
 			<br /><br />
-			<h1 class="wp-heading-inline"><?php _e( 'E-Mail Texte', 'twentythirteen' ); ?></h1>
+			<h2><?php _e( 'E-Mail Texte', 'twentythirteen' ); ?></h2>
 			<p>
 				Hier k&ouml;nnen die Texte der vom Plugin versendeten E-Mails angepasst werden. Es stehen Platzhalter zur Verf&uuml;gung, die vor dem Versenden der E-Mail durch die korrekten Inhalte ausgetauscht werden.
 				<br /><br />
 				Platzhalter: [user_name] [bsd_title] [bsd_datum] [bsd_uhrzeit] [bsd_anzahl_personen] [bsd_info]
 			</p>
-			<h3 class="wp-heading-inline"><?php _e( 'Zusage des Dienstes an User', 'twentythirteen' ); ?></h3>
-			<p>
-				<textarea rows="10" cols="100" id="agree_on_bsd" name="agree_on_bsd" ><?php echo esc_attr( get_option('agree_on_bsd') ); ?></textarea>
-			</p>
-			<h3 class="wp-heading-inline"><?php _e( 'Absage des Dienstes an bereits gesetzten User durch Admin', 'twentythirteen' ); ?></h3>
-			<p>
-				<textarea rows="10" cols="100" id="reject_on_bsd_by_admin" name="reject_on_bsd_by_admin" ><?php echo esc_attr( get_option( 'reject_on_bsd_by_admin' ) ); ?></textarea>
-			</p>
 
-			<h3 class="wp-heading-inline"><?php _e( 'Absage des Dienstes an Admin durch User', 'twentythirteen' ); ?></h3>
-			<p>
-				<textarea rows="10" cols="100" id="reject_on_bsd_by_user" name="reject_on_bsd_by_user" ><?php echo esc_attr( get_option( 'reject_on_bsd_by_user' ) ); ?></textarea>
-			</p>
+			<table class="form-table">
+				<tbody>
+					<tr>
+						<th scope="row"><?php _e( 'Zusage des Dienstes an User', 'twentythirteen' ); ?></th>
+						<td><textarea rows="5" cols="50" id="agree_on_bsd" name="agree_on_bsd" ><?php echo esc_attr( get_option('agree_on_bsd') ); ?></textarea></td>
+					</tr>
+				</tbody>
+			</table>
+
+			<table class="form-table">
+				<tbody>
+					<tr>
+						<th scope="row"><?php _e( 'Absage des Dienstes an bereits gesetzten User durch Admin', 'twentythirteen' ); ?></th>
+						<td><textarea rows="5" cols="50" id="reject_on_bsd_by_admin" name="reject_on_bsd_by_admin" ><?php echo esc_attr( get_option( 'reject_on_bsd_by_admin' ) ); ?></textarea></td>
+					</tr>
+				</tbody>
+			</table>
+
+			<table class="form-table">
+				<tbody>
+					<tr>
+						<th scope="row"><?php _e( 'Absage des Dienstes an Admin durch User', 'twentythirteen' ); ?></th>
+						<td><textarea rows="5" cols="50" id="reject_on_bsd_by_user" name="reject_on_bsd_by_user" ><?php echo esc_attr( get_option( 'reject_on_bsd_by_user' ) ); ?></textarea></td>
+					</tr>
+				</tbody>
+			</table>
+
+			<h2><?php _e( 'Farbeinstellungen', 'twentythirteen' ); ?></h2>
+
+			<table class="form-table">
+				<tbody>
+					<tr>
+						<th scope="row"><?php _e( 'Dienst Kopfzeile geschlossen', 'twentythirteen' ); ?></th>
+						<td><input type="text" id="color_picker_panel_header" name="color_picker_panel_header" value="<?php echo esc_attr( get_option( 'color_picker_panel_header' ) ); ?>" class="color-field" ></td>
+					</tr>
+					<tr>
+						<th scope="row"><?php _e( 'Dienst Kopfzeile ge&ouml;ffnet', 'twentythirteen' ); ?></th>
+						<td><input type="text" id="color_picker_panel_header_active" name="color_picker_panel_header_active" value="<?php echo esc_attr( get_option( 'color_picker_panel_header_active' ) ); ?>" class="color-field" ></td>
+					</tr>
+				</tbody>
+			</table>
+
 			<?php settings_errors(); ?>
 			<?php submit_button(); ?>
 		</form>
@@ -94,4 +126,54 @@ function bsd_mail_reject_on_bsd_by_user_validate( $input ) {
 	}
 
 	return $input;
+}
+
+function bsd_color_picker_panel_header_validate( $input ) {
+
+	$background = trim( $input );
+	$background = strip_tags( stripslashes( $background ) );
+
+	// Check if is a valid hex color
+	if( false === check_color( $input ) ) {
+
+		// Set the error message
+		add_settings_error( 'color_picker_panel_header', 'color_picker_panel_header', 'Das Feld "BSD Kopfzeile geschlossen" muss einen g&uuml;ltigen Farbwert enthalten.', 'error' );
+
+		// Get the previous valid value
+		$background = get_option('color_picker_panel_header');
+
+	}
+
+	return $background;
+}
+
+function bsd_color_picker_panel_header_active_validate( $input ) {
+
+	$background = trim( $input );
+	$background = strip_tags( stripslashes( $background ) );
+
+	// Check if is a valid hex color
+	if( false === check_color( $input ) ) {
+
+		// Set the error message
+		add_settings_error( 'color_picker_panel_header_active', 'color_picker_panel_header_active', 'Das Feld "BSD Kopfzeile ge&ouml;ffnet" muss einen g&uuml;ltigen Farbwert enthalten.', 'error' );
+
+		// Get the previous valid value
+		$background = get_option('color_picker_panel_header');
+
+	}
+
+	return $background;
+}
+
+/**
+ * Function that will check if value is a valid HEX color.
+ */
+function check_color( $value ) {
+
+	if ( preg_match( '/^#[a-f0-9]{6}$/i', $value ) ) { // if user insert a HEX color with #
+		return true;
+	}
+
+	return false;
 }
