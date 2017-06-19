@@ -318,4 +318,4 @@ function bsd_edit_bsds_columns() {
 
 	return $columns;
 }
-add_filter( 'manage_edit-bsds_columns', 'bsd_edit_bsds_columns' );
+add_filter( 'manage_edit_bsds_columns', 'bsd_edit_bsds_columns' );
