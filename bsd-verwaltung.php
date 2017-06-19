@@ -25,6 +25,7 @@ along with {Plugin Name}. If not, see {License URI}.
 
 defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 
+global $wpdb;
 global $bsd_table_name_bookings;
 $bsd_table_name_bookings = $wpdb->prefix . "bsd_bookings";
 
@@ -66,7 +67,7 @@ function bsd_load_css() {
 add_action( 'wp_enqueue_scripts', 'bsd_load_css' );
 
 
-function bsd_add_color_picker( $hook ) {
+function bsd_add_color_picker() {
 
 	if( is_admin() ) {
 
@@ -74,7 +75,7 @@ function bsd_add_color_picker( $hook ) {
 		wp_enqueue_style( 'wp-color-picker' );
 
 		// Include our custom jQuery file with WordPress Color Picker dependency
-		wp_enqueue_script( 'custom-script-handle', plugins_url( 'js/admin-script.js', __FILE__ ), array( 'wp-color-picker' ), false, true );
+		wp_enqueue_script( 'bsd_settings_color_picker', plugins_url( 'js/admin-script.js', __FILE__ ), array( 'wp-color-picker' ), false, true );
 	}
 }
 add_action( 'admin_enqueue_scripts', 'bsd_add_color_picker' );
@@ -108,6 +109,15 @@ function bsd_create_db() {
 	dbDelta( $sql );
 }
 register_activation_hook( __FILE__, 'bsd_create_db' );
+
+function bsd_add_default_values_settings() {
+	add_option( 'agree_on_bsd', 'Hallo [user_name],<br /><br />Du wurdest für einen Brandsicherheitsdienst gesetzt. Folgend findest du die Infos zum betreffenden Dienst:<br /><br />[bsd_title]<br />Datum: [bsd_datum]<br />Beginn: [bsd_uhrzeit] Uhr<br />Anzahl Posten: [bsd_anzahl_personen]<br />Weitere Infos:<br /><br />[bsd_info]<br /><br />Diese E-Mail wurde automatisch generiert, bitte antworte nicht darauf.' );
+	add_option( 'reject_on_bsd_by_admin', 'Hallo [user_name],<br /><br />Du wurdest von einem Brandsicherheitsdienst abgezogen, für den du bereits gesetzt warst. Folgend findest du die Infos zum betreffenden Dienst:<br /><br />[bsd_title]<br />Datum: [bsd_datum]<br />Beginn: [bsd_uhrzeit] Uhr<br />Anzahl Posten: [bsd_anzahl_personen]<br />Weitere Infos:<br /><br />[bsd_info]<br /><br />Diese E-Mail wurde automatisch generiert, bitte antworte nicht darauf.' );
+	add_option( 'reject_on_bsd_by_user', 'Hallo Admin,<br /><br />Der User "[user_name]" hat sich von einem Brandsicherheitsdienst zurückgezogen, für den er bereits gesetzt war. Folgend findest du die Infos zum betreffenden Dienst:<br /><br />[bsd_title]<br />Datum: [bsd_datum]<br />Beginn: [bsd_uhrzeit] Uhr<br />Anzahl Posten: [bsd_anzahl_personen]<br />Weitere Infos:<br /><br />[bsd_info]<br /><br />Diese E-Mail wurde automatisch generiert, bitte antworte nicht darauf.' );
+	add_option( 'color_picker_panel_header', '#eee' );
+	add_option( 'color_picker_panel_header_active', '#666' );
+}
+register_activation_hook( __FILE__, 'bsd_add_default_values_settings' );
 
 /*
  * bsd_create_posttype
@@ -395,7 +405,7 @@ function bsd_send_mail( $post_id, $user_id, $mailtype ) {
 				$message = str_replace('[bsd_anzahl_personen]', get_post_meta( $post_id, '_bsd_count_persons', true ), $message);
 				$message = str_replace('[bsd_info]', $post_data->post_content, $message);
 
-				$message = nl2br( esc_html( $message ), false );
+				$message = nl2br( $message, false );
 
 				add_filter( 'wp_mail_content_type', 'bsd_set_html_mail_content_type' );
 				wp_mail( $to, $subject, $message, $headers );
@@ -414,7 +424,7 @@ function bsd_send_mail( $post_id, $user_id, $mailtype ) {
 				$message = str_replace('[bsd_anzahl_personen]', get_post_meta( $post_id, '_bsd_count_persons', true ), $message);
 				$message = str_replace('[bsd_info]', $post_data->post_content, $message);
 
-				$message = nl2br( esc_html( $message ), false );
+				$message = nl2br( $message, false );
 
 				add_filter( 'wp_mail_content_type', 'bsd_set_html_mail_content_type' );
 				wp_mail( $to, $subject, $message, $headers);
@@ -435,7 +445,7 @@ function bsd_send_mail( $post_id, $user_id, $mailtype ) {
 			$message = str_replace('[bsd_anzahl_personen]', get_post_meta( $post_id, '_bsd_count_persons', true ), $message);
 			$message = str_replace('[bsd_info]', $post_data->post_content, $message);
 
-			$message = nl2br( esc_html( $message ), false );
+			$message = nl2br( $message , false );
 
 			$to = $admin->user_email;
 
