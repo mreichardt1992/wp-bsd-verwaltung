@@ -133,8 +133,15 @@ function bsd_create_posttype() {
 		// CPT Options
 		array(
 			'labels' => array(
-				'name'          => __( 'BSDs' ),
-				'singular_name' => __( 'BSD' )
+				'name'                  => __( 'BSDs' ),
+				'singular_name'         => __( 'BSD' ),
+				'all_items'             => __( 'Alle Dienste' ),
+				'add_new'               => __( 'Dienst hinzufügen' ),
+				'add_new_item'          => __( 'Neuen Dienst hinzufügen' ),
+				'edit_item'             => __( 'Dienst bearbeiten' ),
+				'search_items'          => __( 'Dienste durchsuchen' ),
+				'not_found'             => __( 'Keine Dienste gefunden' ),
+				'not_found_in_trash'    => __( 'Keine Dienste im Papierkorb gefunden' )
 			),
 			'public'      => true,
 			'has_archive' => true,
@@ -145,68 +152,6 @@ function bsd_create_posttype() {
 // Hooking up our function to theme setup
 add_action( 'init', 'bsd_create_posttype' );
 
-/*
- * bsd_set_custom_post_type_options
- *
- * set data/arguments on custom post type "BSDs"
- */
-function bsd_set_custom_post_type_options() {
-
-	// Set UI labels for Custom Post Type
-	$labels = array(
-		'name'                => _x( 'BSDs', 'Post Type General Name', 'twentythirteen' ),
-		'singular_name'       => _x( 'BSD', 'Post Type Singular Name', 'twentythirteen' ),
-		'menu_name'           => __( 'BSDs', 'twentythirteen' ),
-		'parent_item_colon'   => __( 'Übergeordneter BSD', 'twentythirteen' ),
-		'all_items'           => __( 'Alle BSDs', 'twentythirteen' ),
-		'view_item'           => __( 'BSD anzeigen', 'twentythirteen' ),
-		'add_new_item'        => __( 'BSD hinzufügen', 'twentythirteen' ),
-		'add_new'             => __( 'hinzufügen', 'twentythirteen' ),
-		'edit_item'           => __( 'BSD bearbeiten', 'twentythirteen' ),
-		'update_item'         => __( 'BSD aktualisieren', 'twentythirteen' ),
-		'search_items'        => __( 'BSD suchen', 'twentythirteen' ),
-		'not_found'           => __( 'Nicht gefunden', 'twentythirteen' ),
-		'not_found_in_trash'  => __( 'Nichts im Papierkorb gefunden', 'twentythirteen' ),
-	);
-
-	// Set other options for Custom Post Type
-	$args = array(
-		'label'               => __( 'BSDs', 'twentythirteen' ),
-		'description'         => __( 'Brandsicherheitsdienste', 'twentythirteen' ),
-		'labels'              => $labels,
-		// Features this CPT supports in Post Editor
-		'supports'            => array( 'title', 'editor', 'excerpt', 'author', 'thumbnail', 'comments', 'revisions', 'custom-fields', ),
-		// You can associate this CPT with a taxonomy or custom taxonomy.
-		'taxonomies'          => array( 'genres' ),
-		/* A hierarchical CPT is like Pages and can have
-		* Parent and child items. A non-hierarchical CPT
-		* is like Posts.
-		*/
-		'hierarchical'        => false,
-		'public'              => false,
-		'show_ui'             => false,
-		'show_in_menu'        => false,
-		'show_in_nav_menus'   => false,
-		'show_in_admin_bar'   => true,
-		'menu_position'       => 5,
-		'can_export'          => true,
-		'has_archive'         => true,
-		'exclude_from_search' => false,
-		'publicly_queryable'  => false,
-		'capability_type'     => 'page',
-	);
-
-	// Registering your Custom Post Type
-	register_post_type( 'BSDs', $args );
-
-}
-
-/*
- * Hook into the 'init' action so that the function
- * Containing our post type registration is not
- * unnecessarily executed.
- */
-add_action( 'init', 'bsd_set_custom_post_type_options', 0 );
 
 /*
  * bsd_get_event_count_persons
