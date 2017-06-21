@@ -32,10 +32,21 @@ $bsd_table_name_bookings = $wpdb->prefix . "bsd_bookings";
 // load jquery
 wp_enqueue_script('jquery');
 
-include_once 'bsd-verwaltung-user.php';
 include_once 'bsd-verwaltung-frontend.php';
-include_once 'bsd-verwaltung-backend.php';
-include_once 'bsd-verwaltung-settings.php';
+
+if ( true === is_admin() ) {
+
+	include_once 'bsd-verwaltung-user.php';
+	include_once 'bsd-verwaltung-backend.php';
+	include_once 'bsd-verwaltung-settings.php';
+
+	wp_enqueue_script( 'bsd_verwaltung_timepicker_script', plugins_url( 'js/timepicker/jquery.timepicker.min.js' , __FILE__ ) );
+	wp_enqueue_style( 'bsd_verwaltung__timepicker_style' , plugins_url( 'js/timepicker/jquery.timepicker.css' , __FILE__ ) );
+
+	wp_enqueue_script('jquery-ui-datepicker');
+	wp_enqueue_style( 'jquery-ui-datepicker-style' , '//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/themes/smoothness/jquery-ui.css');
+
+}
 
 /*
  * bsd_load_js
@@ -43,16 +54,8 @@ include_once 'bsd-verwaltung-settings.php';
  * add plugin js files to frontend
  */
 function bsd_load_js() {
+
 	wp_register_script( 'bsd_verwaltung_script', plugins_url( '/js/script.js' , __FILE__ ) );
-
-	$js_array = array(
-		'plugin_dir' => plugin_dir_url( __FILE__ ),
-		'ajaxurl' => admin_url( 'admin-ajax.php' )
-	);
-
-	wp_localize_script( 'bsd_verwaltung_script', 'global', $js_array );
-
-	wp_enqueue_script( 'bsd_verwaltung_script' );
 }
 add_action( 'wp_enqueue_scripts', 'bsd_load_js' );
 

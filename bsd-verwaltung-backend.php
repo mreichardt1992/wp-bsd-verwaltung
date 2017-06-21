@@ -142,13 +142,18 @@ function bsd_save_data_field_data( $post_id ) {
 	if ( isset( $_REQUEST['bsd_begin_date'] ) ) {
 
 	    $begin_date = date( 'Y-m-d', strtotime( $_POST['bsd_begin_date'] ) );
+		$today = date("Y-m-d");
+
+	    if ( $begin_date < $today ) {
+		    $begin_date = $today;
+        }
 
 	    if ( 10 !== strlen($begin_date) ) {
-		    $begin_date = '';
+		    $begin_date = $today;
         }
 
 	    if ( false === is_numeric( str_replace( '-', '', $begin_date ) ) ) {
-		    $begin_date = '';
+		    $begin_date = $today;
         }
 
 		update_post_meta( $post_id, '_bsd_begin_date', sanitize_text_field( $begin_date ) );
@@ -157,13 +162,14 @@ function bsd_save_data_field_data( $post_id ) {
 	if ( isset( $_REQUEST['bsd_begin_time'] ) ) {
 
 	    $begin_time = $_POST['bsd_begin_time'];
+	    $now = date("H:s");
 
 		if ( 5 !== strlen($begin_time) ) {
-			$begin_time = '';
+			$begin_time = $now;
 		}
 
 		if ( false === is_numeric( str_replace( ':', '', $begin_time ) ) ) {
-			$begin_time = '';
+			$begin_time = $now;
 		}
 
 		update_post_meta( $post_id, '_bsd_begin_time', sanitize_text_field( $begin_time ) );
