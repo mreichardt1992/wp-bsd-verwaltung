@@ -39,8 +39,13 @@ function bsd_options_do_page() {
             <table class="form-table">
                 <tbody>
                 <tr>
-                    <th scope="row"><?php _e( 'Zugriff auf Dienste nur f&uuml;r angemeldete User?', 'twentythirteen' ); ?></th>
-                    <td><input type="checkbox" name="access_for_frontend_panels" id="access_for_frontend_panels" value="1" <?php checked(1, get_option('access_for_frontend_panels'), true); ?> /></td>
+                    <th scope="row"><?php _e( 'Homepage-Zugriff', 'twentythirteen' ); ?></th>
+                    <td>
+                        <label for="access_for_frontend_panels">
+                            <input type="checkbox" name="access_for_frontend_panels" id="access_for_frontend_panels" value="1" <?php checked(1, get_option('access_for_frontend_panels'), true); ?> />
+	                        <?php _e( 'Zugriff auf Dienste nur f&uuml;r angemeldete User?', 'twentythirteen' ); ?>
+                        </label>
+                    </td>
                 </tr>
                 </tbody>
             </table>

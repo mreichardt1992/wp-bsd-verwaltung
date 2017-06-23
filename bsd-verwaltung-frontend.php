@@ -6,7 +6,7 @@ function bsd_draw_events_panel() {
 
 	if ( false === empty( get_option('access_for_frontend_panels') ) ) {
 
-		echo __("Nur registrierte Nutzer d&uuml;rfen diesen Bereich sehen.", 'wp-bsd-verwaltung');
+		echo __( "Nur registrierte Nutzer d&uuml;rfen diesen Bereich sehen.", 'wp-bsd-verwaltung' );
 
 		return;
 	}
@@ -95,10 +95,16 @@ function bsd_draw_events_panel() {
 			        $panel .=  $post_data->post_content;
 			        $panel .= '</p>';
 
+			        $disabled = '';
+
+					if ( true === empty( get_option('access_for_frontend_panels') ) && 0 == $user->data->ID ) {
+						$disabled = 'disabled';
+					}
+
 			        if ( true === empty($is_user_set_on_event) ) {
-				        $panel .= '<div class="bsd-widget-footer"><button class="accept_bsd_button_' . esc_attr( $post->ID ) . '" onclick="bsd_book_user_on_event( ' . esc_attr( $user->ID ) . ', ' . esc_attr( $post->ID ) . ', ' . esc_attr( $nonce ) . ' );">' . __( "Melden", "wp-bsd-verwaltung" ) . '</button>';
+				        $panel .= '<div class="bsd-widget-footer"><button class="accept_bsd_button_' . esc_attr( $post->ID ) . '" onclick="bsd_book_user_on_event( ' . esc_attr( $user->ID ) . ', ' . esc_attr( $post->ID ) . ', ' . esc_attr( $nonce ) . ' );" ' . esc_attr( $disabled ) . ' >' . __( "Melden", "wp-bsd-verwaltung" ) . '</button>';
 			        } else {
-				        $panel .= '<div class="bsd-widget-footer"><button class="accept_bsd_button_' . esc_attr($post->ID) . '" onclick="bsd_unbook_user_from_event( ' . esc_attr( $post->ID ) . ', ' . esc_attr( $user->ID ) . ', ' . esc_attr( $nonce ) . ' );">' . __( "Meldung zur&uuml;ckziehen", "wp-bsd-verwaltung" ) . '</button>';
+				        $panel .= '<div class="bsd-widget-footer"><button class="accept_bsd_button_' . esc_attr($post->ID) . '" onclick="bsd_unbook_user_from_event( ' . esc_attr( $post->ID ) . ', ' . esc_attr( $user->ID ) . ', ' . esc_attr( $nonce ) . ' );" ' . esc_attr( $disabled ) . ' >' . __( "Meldung zur&uuml;ckziehen", "wp-bsd-verwaltung" ) . '</button>';
 			        }
 
 					if ( 1 == $is_user_set_on_event[0]->is_fix ) {
