@@ -53,8 +53,18 @@ if ( true === is_admin() ) {
  *
  * add plugin js files to frontend
  */
-function bsd_load_js() {
 
+function bsd_load_js() {
+	wp_register_script( 'bsd_verwaltung_script', plugins_url( '/js/script.js' , __FILE__ ) );
+
+	$js_array = array(
+		'plugin_dir' => plugin_dir_url( __FILE__ ),
+		'ajaxurl' => admin_url( 'admin-ajax.php' )
+	);
+
+	wp_localize_script( 'bsd_verwaltung_script', 'global', $js_array );
+
+	wp_enqueue_script( 'bsd_verwaltung_script' );
 	wp_register_script( 'bsd_verwaltung_script', plugins_url( '/js/script.js' , __FILE__ ) );
 }
 add_action( 'wp_enqueue_scripts', 'bsd_load_js' );
