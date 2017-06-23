@@ -4,7 +4,7 @@ function bsd_draw_events_panel() {
 
 	$user = wp_get_current_user();
 
-	if ( 0 == $user->data->ID ) {
+	if ( false === empty( get_option('access_for_frontend_panels') ) ) {
 
 		echo __("Nur registrierte Nutzer d&uuml;rfen diesen Bereich sehen.", 'wp-bsd-verwaltung');
 

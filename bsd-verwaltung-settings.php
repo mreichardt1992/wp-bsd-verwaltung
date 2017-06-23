@@ -16,6 +16,7 @@ function bsd_register_plugin_settings() {
 	register_setting( 'bsd-plugin-settings-group', 'reject_on_bsd_by_user', 'bsd_mail_reject_on_bsd_by_user_validate' );
 	register_setting( 'bsd-plugin-settings-group', 'color_picker_panel_header', 'bsd_color_picker_panel_header_validate' );
 	register_setting( 'bsd-plugin-settings-group', 'color_picker_panel_header_active', 'bsd_color_picker_panel_header_active_validate' );
+	register_setting( 'bsd-plugin-settings-group', 'access_for_frontend_panels');
 }
 
 function bsd_options_do_page() {
@@ -32,6 +33,17 @@ function bsd_options_do_page() {
 			<h1 class="wp-heading-inline"><?php _e( 'BSD Einstellungen', 'twentythirteen' ); ?></h1>
 
 			<br /><br />
+
+            <h2><?php _e( 'Allgemein', 'twentythirteen' ); ?></h2>
+
+            <table class="form-table">
+                <tbody>
+                <tr>
+                    <th scope="row"><?php _e( 'Zugriff auf Dienste nur f&uuml;r angemeldete User?', 'twentythirteen' ); ?></th>
+                    <td><input type="checkbox" name="access_for_frontend_panels" id="access_for_frontend_panels" value="1" <?php checked(1, get_option('access_for_frontend_panels'), true); ?> /></td>
+                </tr>
+                </tbody>
+            </table>
 
             <h2><?php _e( 'Farbeinstellungen', 'twentythirteen' ); ?></h2>
 
@@ -165,7 +177,7 @@ function bsd_color_picker_panel_header_active_validate( $input ) {
 		add_settings_error( 'color_picker_panel_header_active', 'color_picker_panel_header_active', 'Das Feld "BSD Kopfzeile ge&ouml;ffnet" muss einen g&uuml;ltigen Farbwert enthalten.', 'error' );
 
 		// Get the previous valid value
-		$background = get_option( 'color_picker_panel_header' );
+		$background = get_option( 'color_picker_panel_header_active' );
 
 	}
 
