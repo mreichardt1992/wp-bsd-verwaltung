@@ -4,7 +4,7 @@
 Plugin Name: BSD Verwaltung
 Plugin URI:  http://bsd-verwaltung.de
 Description: Verwaltung und Vergabe von (Brandsicherheits-)Diensten an die Mannschaft der Feuerwehr
-Version:     0.1.0
+Version:     1.1
 Author:      Max Reichardt
 License:     GPLv2
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -25,21 +25,35 @@ along with {Plugin Name}. If not, see {License URI}.
 
 defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 
+global $wpdb;
 global $bsd_table_name_bookings;
 $bsd_table_name_bookings = $wpdb->prefix . "bsd_bookings";
 
-include_once 'bsd-verwaltung-user.php';
-include_once 'bsd-verwaltung-frontend.php';
-include_once 'bsd-verwaltung-backend.php';
-
 // load jquery
-wp_enqueue_script('jquery');
+wp_enqueue_script( 'jquery' );
+
+include_once 'bsd-verwaltung-frontend.php';
+
+if ( true === is_admin() ) {
+
+	include_once 'bsd-verwaltung-user.php';
+	include_once 'bsd-verwaltung-backend.php';
+	include_once 'bsd-verwaltung-settings.php';
+
+	wp_enqueue_script( 'bsd_verwaltung_timepicker_script', plugins_url( 'js/timepicker/jquery.timepicker.min.js' , __FILE__ ) );
+	wp_enqueue_style( 'bsd_verwaltung__timepicker_style' , plugins_url( 'js/timepicker/jquery.timepicker.css' , __FILE__ ) );
+
+	wp_enqueue_script( 'jquery-ui-datepicker' );
+	wp_enqueue_style( 'jquery-ui-datepicker-style' , '//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/themes/smoothness/jquery-ui.css' );
+
+}
 
 /*
  * bsd_load_js
  *
  * add plugin js files to frontend
  */
+
 function bsd_load_js() {
 	wp_register_script( 'bsd_verwaltung_script', plugins_url( '/js/script.js' , __FILE__ ) );
 
@@ -51,6 +65,7 @@ function bsd_load_js() {
 	wp_localize_script( 'bsd_verwaltung_script', 'global', $js_array );
 
 	wp_enqueue_script( 'bsd_verwaltung_script' );
+	wp_register_script( 'bsd_verwaltung_script', plugins_url( '/js/script.js' , __FILE__ ) );
 }
 add_action( 'wp_enqueue_scripts', 'bsd_load_js' );
 
@@ -63,6 +78,20 @@ function bsd_load_css() {
 	wp_enqueue_style( 'bsd_verwaltung_style', plugins_url( '/css/styles.css' , __FILE__ ) );
 }
 add_action( 'wp_enqueue_scripts', 'bsd_load_css' );
+
+
+function bsd_add_color_picker() {
+
+	if( is_admin() ) {
+
+		// Add the color picker css file
+		wp_enqueue_style( 'wp-color-picker' );
+
+		// Include our custom jQuery file with WordPress Color Picker dependency
+		wp_enqueue_script( 'bsd_settings_color_picker', plugins_url( 'js/admin-script.js', __FILE__ ), array( 'wp-color-picker' ), false, true );
+	}
+}
+add_action( 'admin_enqueue_scripts', 'bsd_add_color_picker' );
 
 /*
  * bsd_create_db
@@ -95,6 +124,21 @@ function bsd_create_db() {
 register_activation_hook( __FILE__, 'bsd_create_db' );
 
 /*
+ * bsd_add_default_values_settings
+ *
+ * add options to wp settings API
+ */
+function bsd_add_default_values_settings() {
+	add_option( 'agree_on_bsd', 'Hallo [user_name],<br /><br />Du wurdest für einen Brandsicherheitsdienst gesetzt. Folgend findest du die Infos zum betreffenden Dienst:<br /><br />[bsd_title]<br />Datum: [bsd_datum]<br />Beginn: [bsd_uhrzeit] Uhr<br />Anzahl Posten: [bsd_anzahl_personen]<br />Weitere Infos:<br /><br />[bsd_info]<br /><br />Diese E-Mail wurde automatisch generiert, bitte antworte nicht darauf.' );
+	add_option( 'reject_on_bsd_by_admin', 'Hallo [user_name],<br /><br />Du wurdest von einem Brandsicherheitsdienst abgezogen, für den du bereits gesetzt warst. Folgend findest du die Infos zum betreffenden Dienst:<br /><br />[bsd_title]<br />Datum: [bsd_datum]<br />Beginn: [bsd_uhrzeit] Uhr<br />Anzahl Posten: [bsd_anzahl_personen]<br />Weitere Infos:<br /><br />[bsd_info]<br /><br />Diese E-Mail wurde automatisch generiert, bitte antworte nicht darauf.' );
+	add_option( 'reject_on_bsd_by_user', 'Hallo Admin,<br /><br />Der User "[user_name]" hat sich von einem Brandsicherheitsdienst zurückgezogen, für den er bereits gesetzt war. Folgend findest du die Infos zum betreffenden Dienst:<br /><br />[bsd_title]<br />Datum: [bsd_datum]<br />Beginn: [bsd_uhrzeit] Uhr<br />Anzahl Posten: [bsd_anzahl_personen]<br />Weitere Infos:<br /><br />[bsd_info]<br /><br />Diese E-Mail wurde automatisch generiert, bitte antworte nicht darauf.' );
+	add_option( 'color_picker_panel_header', '#eee' );
+	add_option( 'color_picker_panel_header_active', '#666' );
+	add_option( 'cron_last_search_for_bsd', time() );
+}
+register_activation_hook( __FILE__, 'bsd_add_default_values_settings' );
+
+/*
  * bsd_create_posttype
  *
  * registr custom post type "BSDs"
@@ -105,8 +149,15 @@ function bsd_create_posttype() {
 		// CPT Options
 		array(
 			'labels' => array(
-				'name'          => __( 'BSDs' ),
-				'singular_name' => __( 'BSD' )
+				'name'                  => __( 'BSDs' ),
+				'singular_name'         => __( 'BSD' ),
+				'all_items'             => __( 'Alle Dienste' ),
+				'add_new'               => __( 'Dienst hinzufügen' ),
+				'add_new_item'          => __( 'Neuen Dienst hinzufügen' ),
+				'edit_item'             => __( 'Dienst bearbeiten' ),
+				'search_items'          => __( 'Dienste durchsuchen' ),
+				'not_found'             => __( 'Keine Dienste gefunden' ),
+				'not_found_in_trash'    => __( 'Keine Dienste im Papierkorb gefunden' )
 			),
 			'public'      => true,
 			'has_archive' => true,
@@ -114,78 +165,15 @@ function bsd_create_posttype() {
 		)
 	);
 }
-// Hooking up our function to theme setup
 add_action( 'init', 'bsd_create_posttype' );
 
-/*
- * bsd_set_custom_post_type_options
- *
- * set data/arguments on custom post type "BSDs"
- */
-function bsd_set_custom_post_type_options() {
-
-	// Set UI labels for Custom Post Type
-	$labels = array(
-		'name'                => _x( 'BSDs', 'Post Type General Name', 'twentythirteen' ),
-		'singular_name'       => _x( 'BSD', 'Post Type Singular Name', 'twentythirteen' ),
-		'menu_name'           => __( 'BSDs', 'twentythirteen' ),
-		'parent_item_colon'   => __( 'Übergeordneter BSD', 'twentythirteen' ),
-		'all_items'           => __( 'Alle BSDs', 'twentythirteen' ),
-		'view_item'           => __( 'BSD anzeigen', 'twentythirteen' ),
-		'add_new_item'        => __( 'BSD hinzufügen', 'twentythirteen' ),
-		'add_new'             => __( 'hinzufügen', 'twentythirteen' ),
-		'edit_item'           => __( 'BSD bearbeiten', 'twentythirteen' ),
-		'update_item'         => __( 'BSD aktualisieren', 'twentythirteen' ),
-		'search_items'        => __( 'BSD suchen', 'twentythirteen' ),
-		'not_found'           => __( 'Nicht gefunden', 'twentythirteen' ),
-		'not_found_in_trash'  => __( 'Nichts im Papierkorb gefunden', 'twentythirteen' ),
-	);
-
-	// Set other options for Custom Post Type
-	$args = array(
-		'label'               => __( 'BSDs', 'twentythirteen' ),
-		'description'         => __( 'Brandsicherheitsdienste', 'twentythirteen' ),
-		'labels'              => $labels,
-		// Features this CPT supports in Post Editor
-		'supports'            => array( 'title', 'editor', 'excerpt', 'author', 'thumbnail', 'comments', 'revisions', 'custom-fields', ),
-		// You can associate this CPT with a taxonomy or custom taxonomy.
-		'taxonomies'          => array( 'genres' ),
-		/* A hierarchical CPT is like Pages and can have
-		* Parent and child items. A non-hierarchical CPT
-		* is like Posts.
-		*/
-		'hierarchical'        => false,
-		'public'              => false,
-		'show_ui'             => false,
-		'show_in_menu'        => false,
-		'show_in_nav_menus'   => false,
-		'show_in_admin_bar'   => true,
-		'menu_position'       => 5,
-		'can_export'          => true,
-		'has_archive'         => true,
-		'exclude_from_search' => false,
-		'publicly_queryable'  => false,
-		'capability_type'     => 'page',
-	);
-
-	// Registering your Custom Post Type
-	register_post_type( 'BSDs', $args );
-
-}
-
-/*
- * Hook into the 'init' action so that the function
- * Containing our post type registration is not
- * unnecessarily executed.
- */
-add_action( 'init', 'bsd_set_custom_post_type_options', 0 );
 
 /*
  * bsd_get_event_count_persons
  *
  *
  */
-function bsd_get_event_count_persons($post_id = 0, $option = 'all') {
+function bsd_get_event_count_persons( $post_id = 0, $option = 'all' ) {
 
 	if ( 0 == $post_id ) {
 		return 'no post_id';
@@ -262,7 +250,7 @@ function bsd_get_event_data( $user_id = 0, $post_id = 0, $is_fix = false, $retur
  */
 function bsd_book_user_on_event() {
 	if ( ! wp_verify_nonce( $_POST['nonce'], "ajaxloadpost_nonce_" . $_POST['user_id'] ) ) {
-		exit("Wrong nonce");
+		exit( "Wrong nonce" );
 	}
 
 	global $wpdb;
@@ -333,7 +321,7 @@ function bsd_unbook_user_from_event() {
             ", $data['post_id'], $data['user_id'] ) );
 
 	if ( 1 == $bsd_applied_user[0]->is_fix ) {
-		bsd_send_mail($data['post_id'], $data['user_id'], 'reject_on_bsd_by_user');
+		bsd_send_mail( $data['post_id'], $data['user_id'], 'reject_on_bsd_by_user' );
 	}
 
 	$delete = $wpdb->delete( $bsd_table_name_bookings, array( 'user_id' => $data['user_id'], 'post_id' => $data['post_id'] ) );
@@ -370,14 +358,17 @@ function bsd_send_mail( $post_id, $user_id, $mailtype ) {
 	switch ( $mailtype ) {
 		case 'agree_on_bsd':
 				$subject = 'Brandsicherheitsdienst - Zusage';
-				$message = 'Hallo ' .  $user->display_name  . ', <br /><br />';
-				$message .= 'Du wurdest für einen Brandsicherheitsdienst gesetzt. Folgend findest du die Infos zum betreffenden Dienst:<br /><br />';
-				$message .= $post_data->post_title . '<br />';
-				$message .= 'Datum: ' . date('d.m.Y', strtotime( get_post_meta( $post_id, '_bsd_begin_date', true ) ) ) . '<br />';
-				$message .= 'Beginn: ' . get_post_meta( $post_id, '_bsd_begin_time', true ) . ' Uhr<br />';
-				$message .= 'Anzahl Posten: ' . get_post_meta( $post_id, '_bsd_count_persons', true ) . '<br />';
-				$message .= 'Weitere Infos: ' . $post_data->post_content . '<br /><br />';
-				$message .= 'Diese E-Mail wurde automatisch generiert, bitte antworte nicht darauf . ';
+
+				$message = get_option( $mailtype );
+
+				$message = str_replace( '[user_name]', $user->display_name, $message );
+				$message = str_replace( '[bsd_title]', $post_data->post_title, $message );
+				$message = str_replace( '[bsd_datum]', date('d.m.Y', strtotime( get_post_meta( $post_id, '_bsd_begin_date', true ) ) ), $message );
+				$message = str_replace( '[bsd_uhrzeit]', get_post_meta( $post_id, '_bsd_begin_time', true ), $message );
+				$message = str_replace( '[bsd_anzahl_personen]', get_post_meta( $post_id, '_bsd_count_persons', true ), $message );
+				$message = str_replace( '[bsd_info]', $post_data->post_content, $message );
+
+				$message = nl2br( $message, false );
 
 				add_filter( 'wp_mail_content_type', 'bsd_set_html_mail_content_type' );
 				wp_mail( $to, $subject, $message, $headers );
@@ -386,14 +377,17 @@ function bsd_send_mail( $post_id, $user_id, $mailtype ) {
 			break;
 		case 'reject_on_bsd_by_admin':
 				$subject = 'Brandsicherheitsdienst - Absage';
-				$message = 'Hallo ' .  $user->display_name  . ', <br /><br />';
-				$message .= 'Du wurdest von einem Brandsicherheitsdienst abgezogen, für den du gesetzt warst. Folgend findest du die Infos zum betreffenden Dienst:<br /><br />';
-				$message .= $post_data->post_title . '<br />';
-				$message .= 'Datum: ' . date('d.m.Y', strtotime( get_post_meta( $post_id, '_bsd_begin_date', true ) ) ) . '<br />';
-				$message .= 'Beginn: ' . get_post_meta( $post_id, '_bsd_begin_time', true ) . ' Uhr<br />';
-				$message .= 'Anzahl Posten: ' . get_post_meta( $post_id, '_bsd_count_persons', true ) . '<br />';
-				$message .= 'Weitere Infos: ' . $post_data->post_content . '<br /><br />';
-				$message .= 'Diese E-Mail wurde automatisch generiert, bitte antworte nicht darauf . ';
+
+				$message = get_option( $mailtype );
+
+				$message = str_replace( '[user_name]', $user->display_name, $message );
+				$message = str_replace( '[bsd_title]', $post_data->post_title, $message );
+				$message = str_replace( '[bsd_datum]', date('d.m.Y', strtotime( get_post_meta( $post_id, '_bsd_begin_date', true ) ) ), $message );
+				$message = str_replace( '[bsd_uhrzeit]', get_post_meta( $post_id, '_bsd_begin_time', true ), $message );
+				$message = str_replace( '[bsd_anzahl_personen]', get_post_meta( $post_id, '_bsd_count_persons', true ), $message );
+				$message = str_replace( '[bsd_info]', $post_data->post_content, $message );
+
+				$message = nl2br( $message, false );
 
 				add_filter( 'wp_mail_content_type', 'bsd_set_html_mail_content_type' );
 				wp_mail( $to, $subject, $message, $headers);
@@ -403,32 +397,18 @@ function bsd_send_mail( $post_id, $user_id, $mailtype ) {
 		case 'reject_on_bsd_by_user':
 			//mail to user
 
-			$subject = 'Brandsicherheitsdienst - Absage';
-			$message = 'Hallo ' .  $user->display_name  . ', <br /><br />';
-			$message .= 'Du hast dich von einem Brandsicherheitsdienst zurückgezogen, für den du bereits gesetzt warst. Folgend findest du die Infos zum betreffenden Dienst:<br /><br />';
-			$message .= $post_data->post_title . '<br />';
-			$message .= 'Datum: ' . date('d.m.Y', strtotime( get_post_meta( $post_id, '_bsd_begin_date', true ) ) ) . '<br />';
-			$message .= 'Beginn: ' . get_post_meta( $post_id, '_bsd_begin_time', true ) . ' Uhr<br />';
-			$message .= 'Anzahl Posten: ' . get_post_meta( $post_id, '_bsd_count_persons', true ) . '<br />';
-			$message .= 'Weitere Infos: ' . $post_data->post_content . '<br /><br />';
-			$message .= 'Diese E-Mail wurde automatisch generiert, bitte antworte nicht darauf . ';
-
-			add_filter( 'wp_mail_content_type', 'bsd_set_html_mail_content_type' );
-			wp_mail( $to, $subject, $message, $headers);
-			remove_filter( 'wp_mail_content_type', 'bsd_set_html_mail_content_type' );
-
-
-			//mail to admin
-
 			$subject = 'Brandsicherheitsdienst - User-Absage';
-			$message = 'Hallo ' .  $admin->display_name  . ', <br /><br />';
-			$message .= 'Der User "' . $user->display_name . '" hat sich von einem Brandsicherheitsdienst zurückgezogen, für den er bereits gesetzt war. Folgend findest du die Infos zum betreffenden Dienst:<br /><br />';
-			$message .= $post_data->post_title . '<br />';
-			$message .= 'Datum: ' .  date('d.m.Y', strtotime( get_post_meta( $post_id, '_bsd_begin_date', true ) ) ) . '<br />';
-			$message .= 'Beginn: ' . get_post_meta( $post_id, '_bsd_begin_time', true ) . ' Uhr<br />';
-			$message .= 'Anzahl Posten: ' . get_post_meta( $post_id, '_bsd_count_persons', true ) . '<br />';
-			$message .= 'Weitere Infos: ' . $post_data->post_content . '<br /><br />';
-			$message .= 'Diese E-Mail wurde automatisch generiert, bitte antworte nicht darauf . ';
+
+			$message = get_option( $mailtype );
+
+			$message = str_replace( '[user_name]', $admin->display_name, $message );
+			$message = str_replace( '[bsd_title]', $post_data->post_title, $message );
+			$message = str_replace( '[bsd_datum]', date('d.m.Y', strtotime( get_post_meta( $post_id, '_bsd_begin_date', true ) ) ), $message );
+			$message = str_replace( '[bsd_uhrzeit]', get_post_meta( $post_id, '_bsd_begin_time', true ), $message );
+			$message = str_replace( '[bsd_anzahl_personen]', get_post_meta( $post_id, '_bsd_count_persons', true ), $message );
+			$message = str_replace( '[bsd_info]', $post_data->post_content, $message );
+
+			$message = nl2br( $message , false );
 
 			$to = $admin->user_email;
 
@@ -441,7 +421,7 @@ function bsd_send_mail( $post_id, $user_id, $mailtype ) {
 }
 
 /*
- * wpdocs_set_html_mail_content_type
+ * bsd_set_html_mail_content_type
  *
  * set the mail content type to text/html
  */

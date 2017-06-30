@@ -142,13 +142,18 @@ function bsd_save_data_field_data( $post_id ) {
 	if ( isset( $_REQUEST['bsd_begin_date'] ) ) {
 
 	    $begin_date = date( 'Y-m-d', strtotime( $_POST['bsd_begin_date'] ) );
+		$today = date("Y-m-d");
+
+	    if ( $begin_date < $today ) {
+		    $begin_date = $today;
+        }
 
 	    if ( 10 !== strlen($begin_date) ) {
-		    $begin_date = '';
+		    $begin_date = $today;
         }
 
 	    if ( false === is_numeric( str_replace( '-', '', $begin_date ) ) ) {
-		    $begin_date = '';
+		    $begin_date = $today;
         }
 
 		update_post_meta( $post_id, '_bsd_begin_date', sanitize_text_field( $begin_date ) );
@@ -157,13 +162,14 @@ function bsd_save_data_field_data( $post_id ) {
 	if ( isset( $_REQUEST['bsd_begin_time'] ) ) {
 
 	    $begin_time = $_POST['bsd_begin_time'];
+	    $now = date("H:s");
 
 		if ( 5 !== strlen($begin_time) ) {
-			$begin_time = '';
+			$begin_time = $now;
 		}
 
 		if ( false === is_numeric( str_replace( ':', '', $begin_time ) ) ) {
-			$begin_time = '';
+			$begin_time = $now;
 		}
 
 		update_post_meta( $post_id, '_bsd_begin_time', sanitize_text_field( $begin_time ) );
@@ -262,7 +268,7 @@ function bsd_set_custom_edit_bsds_columns( $columns ) {
 	unset( $columns['bsds'] );
 
 	$columns['bsd_location']   = __( 'Ort', 'twentythirteen' );
-	$columns['bsd_begin_date'] = __( 'BSD Datum', 'twentythirteen' );
+	$columns['bsd_begin_date'] = __( 'Dienstbeginn', 'twentythirteen' );
 
 	return $columns;
 }
@@ -279,7 +285,7 @@ function bsd_custom_bsds_column( $column, $post_id ) {
 
 	switch ( $column ) {
 
-		case 'Ort' :
+		case 'bsd_location' :
 			$terms = get_post_meta( $post_id, '_bsd_location', true );
 			if ( is_string( $terms ) ) {
 				echo $terms;
@@ -288,7 +294,7 @@ function bsd_custom_bsds_column( $column, $post_id ) {
 			}
 			break;
 
-		case 'BSD Beginn' :
+		case 'bsd_begin_date' :
 			$terms = date( 'd.m.Y', strtotime( get_post_meta( $post_id, '_bsd_begin_date', true ) ) ) . " - " . get_post_meta( $post_id, '_bsd_begin_time', true ) . " Uhr";
 			if ( is_string( $terms ) ) {
 				echo $terms;
@@ -299,23 +305,47 @@ function bsd_custom_bsds_column( $column, $post_id ) {
 
 	}
 }
-add_action( 'manage_bsds_posts_custom_column', 'bsd_custom_bsds_column', 10, 2 );
+add_action( 'manage_posts_custom_column', 'bsd_custom_bsds_column', 10, 2 );
 
-/*
- * bsd_edit_bsds_columns
- *
- * Set names for columns of overview table
- */
-function bsd_edit_bsds_columns() {
 
-	$columns = array(
-		'cb'         => '<input type="checkbox" />',
-		'title'      => __( 'Veranstaltung' ),
-		'author'     => __( 'Ersteller' ),
-		'BSD Beginn' => __( 'BSD Beginn' ),
-		'Ort'        => __( 'Ort' )
-	);
+function bsd_set_sortable_columns( $columns ) {
+
+	$columns['bsd_location']   = '_bsd_location';
+	$columns['bsd_begin_date'] = '_bsd_begin_date';
 
 	return $columns;
 }
-add_filter( 'manage_edit-bsds_columns', 'bsd_edit_bsds_columns' );
+add_filter( 'manage_edit-bsds_sortable_columns', 'bsd_set_sortable_columns' );
+
+
+function bsd_order_custom_column_by_begin_date( $pieces, $query ) {
+	global $wpdb;
+
+	/**
+	 * We only want our code to run in the main WP query
+	 * AND if an orderby query variable is designated.
+	 */
+	if ( $query->is_main_query() && ( $orderby = $query->get( 'orderby' ) ) ) {
+
+		// Get the order query variable - ASC or DESC
+		$order = strtoupper( $query->get( 'order' ) );
+
+		// Make sure the order setting qualifies. If not, set default as ASC
+		if ( ! in_array( $order, array( 'ASC', 'DESC' ) ) ) {
+			$order = 'ASC';
+        }
+
+		switch( $orderby ) {
+
+			case '_bsd_begin_date':
+
+				$pieces[ 'join' ] .= " LEFT JOIN $wpdb->postmeta wp_rd ON wp_rd.post_id = {$wpdb->posts}.ID AND wp_rd.meta_key = '_bsd_begin_date'";
+
+				$pieces[ 'orderby' ] = "STR_TO_DATE( wp_rd.meta_value,'%Y-%m-%d' ) $order, " . $pieces[ 'orderby' ];
+
+				break;
+		}
+	}
+	return $pieces;
+}
+add_filter( 'posts_clauses', 'bsd_order_custom_column_by_begin_date', 1, 2 );
