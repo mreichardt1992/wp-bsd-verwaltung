@@ -4,7 +4,7 @@
 Plugin Name: BSD Verwaltung
 Plugin URI:  http://bsd-verwaltung.de
 Description: Verwaltung und Vergabe von (Brandsicherheits-)Diensten an die Mannschaft der Feuerwehr
-Version:     0.1.0
+Version:     1.1
 Author:      Max Reichardt
 License:     GPLv2
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -30,7 +30,7 @@ global $bsd_table_name_bookings;
 $bsd_table_name_bookings = $wpdb->prefix . "bsd_bookings";
 
 // load jquery
-wp_enqueue_script('jquery');
+wp_enqueue_script( 'jquery' );
 
 include_once 'bsd-verwaltung-frontend.php';
 
@@ -43,8 +43,8 @@ if ( true === is_admin() ) {
 	wp_enqueue_script( 'bsd_verwaltung_timepicker_script', plugins_url( 'js/timepicker/jquery.timepicker.min.js' , __FILE__ ) );
 	wp_enqueue_style( 'bsd_verwaltung__timepicker_style' , plugins_url( 'js/timepicker/jquery.timepicker.css' , __FILE__ ) );
 
-	wp_enqueue_script('jquery-ui-datepicker');
-	wp_enqueue_style( 'jquery-ui-datepicker-style' , '//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/themes/smoothness/jquery-ui.css');
+	wp_enqueue_script( 'jquery-ui-datepicker' );
+	wp_enqueue_style( 'jquery-ui-datepicker-style' , '//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/themes/smoothness/jquery-ui.css' );
 
 }
 
@@ -123,12 +123,18 @@ function bsd_create_db() {
 }
 register_activation_hook( __FILE__, 'bsd_create_db' );
 
+/*
+ * bsd_add_default_values_settings
+ *
+ * add options to wp settings API
+ */
 function bsd_add_default_values_settings() {
 	add_option( 'agree_on_bsd', 'Hallo [user_name],<br /><br />Du wurdest für einen Brandsicherheitsdienst gesetzt. Folgend findest du die Infos zum betreffenden Dienst:<br /><br />[bsd_title]<br />Datum: [bsd_datum]<br />Beginn: [bsd_uhrzeit] Uhr<br />Anzahl Posten: [bsd_anzahl_personen]<br />Weitere Infos:<br /><br />[bsd_info]<br /><br />Diese E-Mail wurde automatisch generiert, bitte antworte nicht darauf.' );
 	add_option( 'reject_on_bsd_by_admin', 'Hallo [user_name],<br /><br />Du wurdest von einem Brandsicherheitsdienst abgezogen, für den du bereits gesetzt warst. Folgend findest du die Infos zum betreffenden Dienst:<br /><br />[bsd_title]<br />Datum: [bsd_datum]<br />Beginn: [bsd_uhrzeit] Uhr<br />Anzahl Posten: [bsd_anzahl_personen]<br />Weitere Infos:<br /><br />[bsd_info]<br /><br />Diese E-Mail wurde automatisch generiert, bitte antworte nicht darauf.' );
 	add_option( 'reject_on_bsd_by_user', 'Hallo Admin,<br /><br />Der User "[user_name]" hat sich von einem Brandsicherheitsdienst zurückgezogen, für den er bereits gesetzt war. Folgend findest du die Infos zum betreffenden Dienst:<br /><br />[bsd_title]<br />Datum: [bsd_datum]<br />Beginn: [bsd_uhrzeit] Uhr<br />Anzahl Posten: [bsd_anzahl_personen]<br />Weitere Infos:<br /><br />[bsd_info]<br /><br />Diese E-Mail wurde automatisch generiert, bitte antworte nicht darauf.' );
 	add_option( 'color_picker_panel_header', '#eee' );
 	add_option( 'color_picker_panel_header_active', '#666' );
+	add_option( 'cron_last_search_for_bsd', time() );
 }
 register_activation_hook( __FILE__, 'bsd_add_default_values_settings' );
 
@@ -159,7 +165,6 @@ function bsd_create_posttype() {
 		)
 	);
 }
-// Hooking up our function to theme setup
 add_action( 'init', 'bsd_create_posttype' );
 
 
@@ -168,7 +173,7 @@ add_action( 'init', 'bsd_create_posttype' );
  *
  *
  */
-function bsd_get_event_count_persons($post_id = 0, $option = 'all') {
+function bsd_get_event_count_persons( $post_id = 0, $option = 'all' ) {
 
 	if ( 0 == $post_id ) {
 		return 'no post_id';
@@ -245,7 +250,7 @@ function bsd_get_event_data( $user_id = 0, $post_id = 0, $is_fix = false, $retur
  */
 function bsd_book_user_on_event() {
 	if ( ! wp_verify_nonce( $_POST['nonce'], "ajaxloadpost_nonce_" . $_POST['user_id'] ) ) {
-		exit("Wrong nonce");
+		exit( "Wrong nonce" );
 	}
 
 	global $wpdb;
@@ -316,7 +321,7 @@ function bsd_unbook_user_from_event() {
             ", $data['post_id'], $data['user_id'] ) );
 
 	if ( 1 == $bsd_applied_user[0]->is_fix ) {
-		bsd_send_mail($data['post_id'], $data['user_id'], 'reject_on_bsd_by_user');
+		bsd_send_mail( $data['post_id'], $data['user_id'], 'reject_on_bsd_by_user' );
 	}
 
 	$delete = $wpdb->delete( $bsd_table_name_bookings, array( 'user_id' => $data['user_id'], 'post_id' => $data['post_id'] ) );
@@ -356,12 +361,12 @@ function bsd_send_mail( $post_id, $user_id, $mailtype ) {
 
 				$message = get_option( $mailtype );
 
-				$message = str_replace('[user_name]', $user->display_name, $message);
-				$message = str_replace('[bsd_title]', $post_data->post_title, $message);
-				$message = str_replace('[bsd_datum]', date('d.m.Y', strtotime( get_post_meta( $post_id, '_bsd_begin_date', true ) ) ), $message);
-				$message = str_replace('[bsd_uhrzeit]', get_post_meta( $post_id, '_bsd_begin_time', true ), $message);
-				$message = str_replace('[bsd_anzahl_personen]', get_post_meta( $post_id, '_bsd_count_persons', true ), $message);
-				$message = str_replace('[bsd_info]', $post_data->post_content, $message);
+				$message = str_replace( '[user_name]', $user->display_name, $message );
+				$message = str_replace( '[bsd_title]', $post_data->post_title, $message );
+				$message = str_replace( '[bsd_datum]', date('d.m.Y', strtotime( get_post_meta( $post_id, '_bsd_begin_date', true ) ) ), $message );
+				$message = str_replace( '[bsd_uhrzeit]', get_post_meta( $post_id, '_bsd_begin_time', true ), $message );
+				$message = str_replace( '[bsd_anzahl_personen]', get_post_meta( $post_id, '_bsd_count_persons', true ), $message );
+				$message = str_replace( '[bsd_info]', $post_data->post_content, $message );
 
 				$message = nl2br( $message, false );
 
@@ -375,12 +380,12 @@ function bsd_send_mail( $post_id, $user_id, $mailtype ) {
 
 				$message = get_option( $mailtype );
 
-				$message = str_replace('[user_name]', $user->display_name, $message);
-				$message = str_replace('[bsd_title]', $post_data->post_title, $message);
-				$message = str_replace('[bsd_datum]', date('d.m.Y', strtotime( get_post_meta( $post_id, '_bsd_begin_date', true ) ) ), $message);
-				$message = str_replace('[bsd_uhrzeit]', get_post_meta( $post_id, '_bsd_begin_time', true ), $message);
-				$message = str_replace('[bsd_anzahl_personen]', get_post_meta( $post_id, '_bsd_count_persons', true ), $message);
-				$message = str_replace('[bsd_info]', $post_data->post_content, $message);
+				$message = str_replace( '[user_name]', $user->display_name, $message );
+				$message = str_replace( '[bsd_title]', $post_data->post_title, $message );
+				$message = str_replace( '[bsd_datum]', date('d.m.Y', strtotime( get_post_meta( $post_id, '_bsd_begin_date', true ) ) ), $message );
+				$message = str_replace( '[bsd_uhrzeit]', get_post_meta( $post_id, '_bsd_begin_time', true ), $message );
+				$message = str_replace( '[bsd_anzahl_personen]', get_post_meta( $post_id, '_bsd_count_persons', true ), $message );
+				$message = str_replace( '[bsd_info]', $post_data->post_content, $message );
 
 				$message = nl2br( $message, false );
 
@@ -396,12 +401,12 @@ function bsd_send_mail( $post_id, $user_id, $mailtype ) {
 
 			$message = get_option( $mailtype );
 
-			$message = str_replace('[user_name]', $admin->display_name, $message);
-			$message = str_replace('[bsd_title]', $post_data->post_title, $message);
-			$message = str_replace('[bsd_datum]', date('d.m.Y', strtotime( get_post_meta( $post_id, '_bsd_begin_date', true ) ) ), $message);
-			$message = str_replace('[bsd_uhrzeit]', get_post_meta( $post_id, '_bsd_begin_time', true ), $message);
-			$message = str_replace('[bsd_anzahl_personen]', get_post_meta( $post_id, '_bsd_count_persons', true ), $message);
-			$message = str_replace('[bsd_info]', $post_data->post_content, $message);
+			$message = str_replace( '[user_name]', $admin->display_name, $message );
+			$message = str_replace( '[bsd_title]', $post_data->post_title, $message );
+			$message = str_replace( '[bsd_datum]', date('d.m.Y', strtotime( get_post_meta( $post_id, '_bsd_begin_date', true ) ) ), $message );
+			$message = str_replace( '[bsd_uhrzeit]', get_post_meta( $post_id, '_bsd_begin_time', true ), $message );
+			$message = str_replace( '[bsd_anzahl_personen]', get_post_meta( $post_id, '_bsd_count_persons', true ), $message );
+			$message = str_replace( '[bsd_info]', $post_data->post_content, $message );
 
 			$message = nl2br( $message , false );
 
@@ -416,11 +421,10 @@ function bsd_send_mail( $post_id, $user_id, $mailtype ) {
 }
 
 /*
- * wpdocs_set_html_mail_content_type
+ * bsd_set_html_mail_content_type
  *
  * set the mail content type to text/html
  */
 function bsd_set_html_mail_content_type() {
 	return 'text/html';
 }
-

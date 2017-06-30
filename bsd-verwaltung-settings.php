@@ -3,7 +3,7 @@
 //Add settings to menu
 add_action( 'admin_menu', 'bsd_options_add_page' );
 function bsd_options_add_page() {
-	add_submenu_page('edit.php?post_type=bsds', 'Einstellungen', 'Einstellungen', 'manage_options', basename(__FILE__), 'bsd_options_do_page');
+	add_submenu_page( 'edit.php?post_type=bsds', 'Einstellungen', 'Einstellungen', 'manage_options', basename( __FILE__ ), 'bsd_options_do_page' );
 
 	//call register settings function
 	add_action( 'admin_init', 'bsd_register_plugin_settings' );
@@ -16,12 +16,12 @@ function bsd_register_plugin_settings() {
 	register_setting( 'bsd-plugin-settings-group', 'reject_on_bsd_by_user', 'bsd_mail_reject_on_bsd_by_user_validate' );
 	register_setting( 'bsd-plugin-settings-group', 'color_picker_panel_header', 'bsd_color_picker_panel_header_validate' );
 	register_setting( 'bsd-plugin-settings-group', 'color_picker_panel_header_active', 'bsd_color_picker_panel_header_active_validate' );
-	register_setting( 'bsd-plugin-settings-group', 'access_for_frontend_panels');
+	register_setting( 'bsd-plugin-settings-group', 'access_for_frontend_panels' );
 }
 
 function bsd_options_do_page() {
 
-	$breaks = array("<br />","<br>","<br/>","&lt;br /&gt;");
+	$breaks = array( "<br />","<br>","<br/>","&lt;br /&gt;" );
 
 	?>
 	<div class="wrap">
@@ -42,7 +42,7 @@ function bsd_options_do_page() {
                     <th scope="row"><?php _e( 'Homepage-Zugriff', 'twentythirteen' ); ?></th>
                     <td>
                         <label for="access_for_frontend_panels">
-                            <input type="checkbox" name="access_for_frontend_panels" id="access_for_frontend_panels" value="1" <?php checked(1, get_option('access_for_frontend_panels'), true); ?> />
+                            <input type="checkbox" name="access_for_frontend_panels" id="access_for_frontend_panels" value="1" <?php checked( 1, get_option( 'access_for_frontend_panels' ), true ); ?> />
 	                        <?php _e( 'Zugriff auf Dienste nur f&uuml;r angemeldete User?', 'twentythirteen' ); ?>
                         </label>
                     </td>
@@ -94,7 +94,7 @@ function bsd_options_do_page() {
 				<tbody>
 					<tr>
 						<th scope="row"><?php _e( 'Absage des Dienstes an Admin durch User', 'twentythirteen' ); ?></th>
-						<td><textarea rows="5" cols="50" id="reject_on_bsd_by_user" name="reject_on_bsd_by_user" ><?php echo str_ireplace( $breaks, "\r\n",  get_option('reject_on_bsd_by_user') );; ?></textarea></td>
+						<td><textarea rows="5" cols="50" id="reject_on_bsd_by_user" name="reject_on_bsd_by_user" ><?php echo str_ireplace( $breaks, "\r\n",  get_option('reject_on_bsd_by_user') ); ?></textarea></td>
 					</tr>
 				</tbody>
 			</table>

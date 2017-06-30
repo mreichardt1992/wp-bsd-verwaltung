@@ -36,13 +36,13 @@ function bsd_draw_events_panel() {
 
 	$x = 1;
 
-	if (true === empty( get_option( 'color_picker_panel_header' ) )) {
+	if ( true === empty( get_option( 'color_picker_panel_header' ) ) ) {
 		$color_panel_header = '#eee';
 	} else {
 		$color_panel_header = get_option( 'color_picker_panel_header' );
 	}
 
-	if (true === empty( get_option( 'color_picker_panel_header_active' ) )) {
+	if ( true === empty( get_option( 'color_picker_panel_header_active' ) ) ) {
 		$color_panel_header_active = '#666';
 	} else {
 		$color_panel_header_active = get_option( 'color_picker_panel_header_active' );
@@ -71,9 +71,9 @@ function bsd_draw_events_panel() {
 
 		$post_data = get_post( $post->ID );
 
-		$date = strtotime(date('d.m.Y', time()));
+		$date = strtotime( date( 'd.m.Y', time() ) );
 
-		$bsd_date = strtotime(date('d.m.Y', strtotime( get_post_meta( $post->ID, '_bsd_begin_date', true ))) );
+		$bsd_date = strtotime( date( 'd.m.Y', strtotime( get_post_meta( $post->ID, '_bsd_begin_date', true ) ) ) );
 
 		if ( $bsd_date < $date ) {
 			continue;
@@ -85,7 +85,7 @@ function bsd_draw_events_panel() {
 
 		$panel .= '<div class="bsd-widget">';
 			$panel .= '<div class="bsd-widget-inner">';
-				$panel .= '<h4 class="bsd-widget-title">' . esc_html( date('d.m.Y', $bsd_date) ). ' | ' .esc_html( $post_data->post_title ) . '</h4>';
+				$panel .= '<h4 class="bsd-widget-title">' . esc_html( date( 'd.m.Y', $bsd_date ) ). ' | ' .esc_html( $post_data->post_title ) . '</h4>';
 				$panel .= '<div id="store" class="bsd-widget-content">';
 					$panel .= '<p>';
 					$panel .=  '<b>' . __( "Beginn:", "wp-bsd-verwaltung" ) . ' </b>' . esc_html( get_post_meta( $post->ID, '_bsd_begin_time', true ) ) . " Uhr | ";
@@ -125,4 +125,4 @@ function bsd_draw_events_panel() {
 	return $panel;
 
 }
-add_shortcode('BSD_Panel', 'bsd_draw_events_panel');
+add_shortcode( 'BSD_Panel', 'bsd_draw_events_panel' );
