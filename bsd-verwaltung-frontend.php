@@ -102,13 +102,13 @@ function bsd_draw_events_panel() {
 					}
 
 			        if ( true === empty($is_user_set_on_event) ) {
-				        $panel .= '<div class="bsd-widget-footer"><button class="accept_bsd_button_' . esc_attr( $post->ID ) . '" onclick="bsd_book_user_on_event( ' . esc_attr( $user->ID ) . ', ' . esc_attr( $post->ID ) . ', ' . esc_attr( $nonce ) . ' );" ' . esc_attr( $disabled ) . ' >' . __( "Melden", "wp-bsd-verwaltung" ) . '</button>';
+				        $panel .= '<div class="bsd-widget-footer"><a id="accept_bsd_button" class="accept_bsd_button_' . esc_attr( $post->ID ) . '" onclick="bsd_book_user_on_event( ' . esc_attr( $user->ID ) . ', ' . esc_attr( $post->ID ) . ', ' . esc_attr( $nonce ) . ' );" ' . esc_attr( $disabled ) . ' >' . __( "Melden", "wp-bsd-verwaltung" ) . '</a>';
 			        } else {
-				        $panel .= '<div class="bsd-widget-footer"><button class="accept_bsd_button_' . esc_attr($post->ID) . '" onclick="bsd_unbook_user_from_event( ' . esc_attr( $post->ID ) . ', ' . esc_attr( $user->ID ) . ', ' . esc_attr( $nonce ) . ' );" ' . esc_attr( $disabled ) . ' >' . __( "Meldung zur&uuml;ckziehen", "wp-bsd-verwaltung" ) . '</button>';
+				        $panel .= '<div class="bsd-widget-footer"><a id="accept_bsd_button" class="accept_bsd_button_' . esc_attr($post->ID) . '" onclick="bsd_unbook_user_from_event( ' . esc_attr( $post->ID ) . ', ' . esc_attr( $user->ID ) . ', ' . esc_attr( $nonce ) . ' );" ' . esc_attr( $disabled ) . ' >' . __( "Meldung zur&uuml;ckziehen", "wp-bsd-verwaltung" ) . '</a>';
 			        }
 
 					if ( 1 == $is_user_set_on_event[0]->is_fix ) {
-						$panel .= '&nbsp;<button id="is-fix-text-' . esc_attr( $post->ID ) . '" class="is-fix-text">' . __( "Du bist f&uuml;r diesen Dienst gesetzt!", "wp-bsd-verwaltung" ) . '</button>';
+						$panel .= '&nbsp;<a id="is-fix-text-' . esc_attr( $post->ID ) . '" class="is-fix-text">' . __( "Du bist f&uuml;r diesen Dienst gesetzt!", "wp-bsd-verwaltung" ) . '</a>';
 					}
 
 					$panel .= '</div>';

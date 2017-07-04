@@ -132,8 +132,8 @@ function bsd_add_default_values_settings() {
 	add_option( 'agree_on_bsd', 'Hallo [user_name],<br /><br />Du wurdest für einen Brandsicherheitsdienst gesetzt. Folgend findest du die Infos zum betreffenden Dienst:<br /><br />[bsd_title]<br />Datum: [bsd_datum]<br />Beginn: [bsd_uhrzeit] Uhr<br />Anzahl Posten: [bsd_anzahl_personen]<br />Weitere Infos:<br /><br />[bsd_info]<br /><br />Diese E-Mail wurde automatisch generiert, bitte antworte nicht darauf.' );
 	add_option( 'reject_on_bsd_by_admin', 'Hallo [user_name],<br /><br />Du wurdest von einem Brandsicherheitsdienst abgezogen, für den du bereits gesetzt warst. Folgend findest du die Infos zum betreffenden Dienst:<br /><br />[bsd_title]<br />Datum: [bsd_datum]<br />Beginn: [bsd_uhrzeit] Uhr<br />Anzahl Posten: [bsd_anzahl_personen]<br />Weitere Infos:<br /><br />[bsd_info]<br /><br />Diese E-Mail wurde automatisch generiert, bitte antworte nicht darauf.' );
 	add_option( 'reject_on_bsd_by_user', 'Hallo Admin,<br /><br />Der User "[user_name]" hat sich von einem Brandsicherheitsdienst zurückgezogen, für den er bereits gesetzt war. Folgend findest du die Infos zum betreffenden Dienst:<br /><br />[bsd_title]<br />Datum: [bsd_datum]<br />Beginn: [bsd_uhrzeit] Uhr<br />Anzahl Posten: [bsd_anzahl_personen]<br />Weitere Infos:<br /><br />[bsd_info]<br /><br />Diese E-Mail wurde automatisch generiert, bitte antworte nicht darauf.' );
-	add_option( 'color_picker_panel_header', '#eee' );
-	add_option( 'color_picker_panel_header_active', '#666' );
+	add_option( 'color_picker_panel_header', '#eeeeee' );
+	add_option( 'color_picker_panel_header_active', '#666666' );
 	add_option( 'cron_last_search_for_bsd', time() );
 }
 register_activation_hook( __FILE__, 'bsd_add_default_values_settings' );
