@@ -57,6 +57,9 @@ Ich freue mich immer &uuml;ber Feedback. Entweder ihr erstellt ein neues Topic i
 
 == Changelog ==
 
+= 1.1.3 =
+* Neues, einheitliches Design für die Buttons im Frontend (Template-unabhängig)
+
 = 1.1.2 =
 * Encoding-Fehler korrigiert, wodurch bei der Aktivierung eine Fehlermeldung auftrat
 
