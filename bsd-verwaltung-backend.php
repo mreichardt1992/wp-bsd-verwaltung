@@ -349,3 +349,46 @@ function bsd_order_custom_column_by_begin_date( $pieces, $query ) {
 	return $pieces;
 }
 add_filter( 'posts_clauses', 'bsd_order_custom_column_by_begin_date', 1, 2 );
+
+
+function bsd_filter_expired_posts() {
+	$args = array(
+		'posts_per_page'   => 100,
+		'offset'           => 0,
+		'category'         => '',
+		'category_name'    => '',
+		'include'          => '',
+		'exclude'          => '',
+		'post_type'        => 'bsds',
+		'post_mime_type'   => '',
+		'post_parent'      => '',
+		'author'	       => '',
+		'author_name'	   => '',
+		'post_status'      => 'publish',
+		'suppress_filters' => true,
+		'meta_key'         => '_bsd_begin_date',
+		'orderby'          => 'meta_value',
+		'order'            => 'ASC'
+	);
+
+	$posts_array = get_posts( $args );
+
+	foreach ( $posts_array AS $post ) {
+
+		$date = strtotime( date( 'd.m.Y', time() ) );
+
+		$bsd_date = strtotime( date( 'd.m.Y', strtotime( get_post_meta( $post->ID, '_bsd_begin_date', true ) ) ) );
+
+		if ( $bsd_date < $date ) {
+			$post_data = array(
+				'ID'            => $post->ID,
+                'post_status'   => 'trash'
+			);
+
+			// Update the post into the database
+			wp_update_post( $post_data );
+		}
+	}
+}
+
+add_action( 'admin_init', 'bsd_filter_expired_posts' );
