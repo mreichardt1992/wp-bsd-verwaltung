@@ -90,7 +90,14 @@ function bsd_build_data_field( $post ) {
                             $is_fix = 'checked="checked"';
                         }
 
-                        echo '<input type="checkbox" id="bsd_attendant_' . esc_attr( $user->data->ID ) . '" name="bsd_attendants[]" value="' . esc_attr( $user->data->ID ) . '" ' . esc_attr( $is_fix ) . '><label for="bsd_attendant_' . esc_attr( $user->data->ID ) . '" />' . esc_html( $user->data->display_name ) . '&nbsp;<img src ="' . esc_url( plugin_dir_url( __FILE__ ) ) . 'images/truppfuehrer.png" style="width: 15px; vertical-align: middle;" /></label><br />';
+	                    $leader_image = '';
+	                    $leader = get_the_author_meta( 'bsd_leader', $user->ID );
+
+                        if (1 == $leader) {
+                            $leader_image = '<img src ="' . esc_url( plugin_dir_url( __FILE__ ) ) . 'images/truppfuehrer.png" style="width: 15px; vertical-align: middle;" />';
+                        }
+
+                        echo '<input type="checkbox" id="bsd_attendant_' . esc_attr( $user->data->ID ) . '" name="bsd_attendants[]" value="' . esc_attr( $user->data->ID ) . '" ' . esc_attr( $is_fix ) . '><label for="bsd_attendant_' . esc_attr( $user->data->ID ) . '" />' . esc_html( $user->data->display_name ) . '&nbsp;'.$leader_image.'</label><br />';
                     }
                     ?>
                 </td>
