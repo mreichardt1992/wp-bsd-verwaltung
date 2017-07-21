@@ -26,6 +26,7 @@ along with {Plugin Name}. If not, see {License URI}.
 defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
 
 global $wpdb;
+
 global $bsd_table_name_bookings;
 $bsd_table_name_bookings = $wpdb->prefix . "bsd_bookings";
 
@@ -129,7 +130,7 @@ register_activation_hook( __FILE__, 'bsd_create_db' );
  * add options to wp settings API
  */
 function bsd_add_default_values_settings() {
-	add_option( 'agree_on_bsd', 'Hallo [user_name],<br /><br />Du wurdest für einen Brandsicherheitsdienst gesetzt. Folgend findest du die Infos zum betreffenden Dienst:<br /><br />[bsd_title]<br />Datum: [bsd_datum]<br />Beginn: [bsd_uhrzeit] Uhr<br />Anzahl Posten: [bsd_anzahl_personen]<br />Weitere Infos:<br /><br />[bsd_info]<br /><br />Diese E-Mail wurde automatisch generiert, bitte antworte nicht darauf.' );
+	add_option( 'bsd_agree_on_bsd', 'Hallo [user_name],<br /><br />Du wurdest für einen Brandsicherheitsdienst gesetzt. Folgend findest du die Infos zum betreffenden Dienst:<br /><br />[bsd_title]<br />Datum: [bsd_datum]<br />Beginn: [bsd_uhrzeit] Uhr<br />Anzahl Posten: [bsd_anzahl_personen]<br />Weitere Infos:<br /><br />[bsd_info]<br /><br />Diese E-Mail wurde automatisch generiert, bitte antworte nicht darauf.' );
 	add_option( 'reject_on_bsd_by_admin', 'Hallo [user_name],<br /><br />Du wurdest von einem Brandsicherheitsdienst abgezogen, für den du bereits gesetzt warst. Folgend findest du die Infos zum betreffenden Dienst:<br /><br />[bsd_title]<br />Datum: [bsd_datum]<br />Beginn: [bsd_uhrzeit] Uhr<br />Anzahl Posten: [bsd_anzahl_personen]<br />Weitere Infos:<br /><br />[bsd_info]<br /><br />Diese E-Mail wurde automatisch generiert, bitte antworte nicht darauf.' );
 	add_option( 'reject_on_bsd_by_user', 'Hallo Admin,<br /><br />Der User "[user_name]" hat sich von einem Brandsicherheitsdienst zurückgezogen, für den er bereits gesetzt war. Folgend findest du die Infos zum betreffenden Dienst:<br /><br />[bsd_title]<br />Datum: [bsd_datum]<br />Beginn: [bsd_uhrzeit] Uhr<br />Anzahl Posten: [bsd_anzahl_personen]<br />Weitere Infos:<br /><br />[bsd_info]<br /><br />Diese E-Mail wurde automatisch generiert, bitte antworte nicht darauf.' );
 	add_option( 'color_picker_panel_header', '#eeeeee' );
@@ -356,7 +357,7 @@ function bsd_send_mail( $post_id, $user_id, $mailtype ) {
 	$to = $user->user_email;
 
 	switch ( $mailtype ) {
-		case 'agree_on_bsd':
+		case 'bsd_agree_on_bsd':
 				$subject = 'Brandsicherheitsdienst - Zusage';
 
 				$message = get_option( $mailtype );
@@ -427,4 +428,46 @@ function bsd_send_mail( $post_id, $user_id, $mailtype ) {
  */
 function bsd_set_html_mail_content_type() {
 	return 'text/html';
+}
+
+function bsd_cron_exec () {
+
+	global $wpdb;
+
+	if ( true === empty( get_option( 'access_for_frontend_panels' ) ) ) {
+		return;
+	}
+
+	$notification_count = get_option( 'bsd_mail_notification_count', 0 );
+
+	if ( $notification_count < 1 ) {
+		return;
+	}
+
+	$user_mails = $wpdb->get_results( "
+		SELECT
+			user_login, display_name, user_email
+		FROM 
+			" . $wpdb->prefix . "users
+	" );
+
+	foreach ($user_mails AS $user_mail) {
+
+		$message = 'Hallo ' . $user_mail->display_name . ',<br><br> auf ' .  get_site_url() . ' gibt es neue Brandsicherheitsdienste. Du findest sie im internen Bereich.<br><br>Bitte antworte nicht auf diese Mail, da sie automatisch generiert wurde.';
+
+		add_filter( 'wp_mail_content_type', 'bsd_set_html_mail_content_type' );
+		wp_mail( $user_mail->user_email, 'Neue BSDs', $message);
+		remove_filter( 'wp_mail_content_type', 'bsd_set_html_mail_content_type' );
+	}
+
+	update_option( 'bsd_mail_notification_count', 0 );
+}
+add_action( 'bsd_cron_hook', 'bsd_cron_exec' );
+
+if ( "1" === get_option( 'bsd_enable_daily_mail_notification', false ) ) {
+	if ( false === wp_next_scheduled( 'bsd_cron_hook' ) ) {
+		wp_schedule_event( time(), 'daily', 'bsd_cron_hook' );
+	}
+} else {
+		wp_unschedule_event( wp_next_scheduled( 'bsd_cron_hook' ), 'bsd_cron_hook' );
 }

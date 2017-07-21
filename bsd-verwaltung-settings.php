@@ -11,17 +11,20 @@ function bsd_options_add_page() {
 
 function bsd_register_plugin_settings() {
 	//register our settings
-	register_setting( 'bsd-plugin-settings-group', 'agree_on_bsd', 'bsd_mail_agree_on_bsd_validate' );
+	register_setting( 'bsd-plugin-settings-group', 'bsd_agree_on_bsd', 'bsd_mail_agree_on_bsd_validate' );
 	register_setting( 'bsd-plugin-settings-group', 'reject_on_bsd_by_admin', 'bsd_mail_reject_on_bsd_by_admin_validate' );
 	register_setting( 'bsd-plugin-settings-group', 'reject_on_bsd_by_user', 'bsd_mail_reject_on_bsd_by_user_validate' );
 	register_setting( 'bsd-plugin-settings-group', 'color_picker_panel_header', 'bsd_color_picker_panel_header_validate' );
 	register_setting( 'bsd-plugin-settings-group', 'color_picker_panel_header_active', 'bsd_color_picker_panel_header_active_validate' );
 	register_setting( 'bsd-plugin-settings-group', 'access_for_frontend_panels' );
+	register_setting( 'bsd-plugin-settings-group', 'bsd_enable_daily_mail_notification' );
 }
 
 function bsd_options_do_page() {
 
 	$breaks = array( "<br />","<br>","<br/>","&lt;br /&gt;" );
+
+	date_default_timezone_set( 'Europe/Berlin' )
 
 	?>
 	<div class="wrap">
@@ -44,6 +47,27 @@ function bsd_options_do_page() {
                         <label for="access_for_frontend_panels">
                             <input type="checkbox" name="access_for_frontend_panels" id="access_for_frontend_panels" value="1" <?php checked( 1, get_option( 'access_for_frontend_panels' ), true ); ?> />
 	                        <?php _e( 'Zugriff auf Dienste nur f&uuml;r angemeldete User?', 'twentythirteen' ); ?>
+                        </label>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+            <table class="form-table">
+                <tbody>
+                <tr>
+                    <th scope="row"><?php _e( 'T&auml;gliche Benachrichtigungen', 'twentythirteen' ); ?></th>
+                    <td>
+                        <label for="bsd_enable_daily_mail_notification">
+                            <input type="checkbox" name="bsd_enable_daily_mail_notification" id="bsd_enable_daily_mail_notification" value="1" <?php checked( 1, get_option( 'bsd_enable_daily_mail_notification' ), true ); ?> />
+							<?php
+                                _e( 'T&auml;glicher Versand einer Benachrichtigungsmail an alle User, wenn neue Dienste eingetragen wurden. Beim Einschalten wird, sofern neue Dienste vorliegen, eine Mail an alle User verschickt. ', 'twentythirteen' );
+                                if ( false === wp_next_scheduled( 'bsd_cron_hook' ) ) {
+
+                                } else {
+	                                echo 'N&auml;chster Versand: ' . date( 'd.m.Y, H:i', wp_next_scheduled( 'bsd_cron_hook' ) ) . ' Uhr';
+                                }
+                            ?>
                         </label>
                     </td>
                 </tr>
@@ -76,7 +100,7 @@ function bsd_options_do_page() {
 				<tbody>
 					<tr>
 						<th scope="row"><?php _e( 'Zusage des Dienstes an User', 'twentythirteen' ); ?></th>
-						<td><textarea rows="5" cols="50" id="agree_on_bsd" name="agree_on_bsd" ><?php echo str_ireplace( $breaks, "\r\n",  get_option('agree_on_bsd') ); ?></textarea></td>
+						<td><textarea rows="5" cols="50" id="bsd_agree_on_bsd" name="bsd_agree_on_bsd" ><?php echo str_ireplace( $breaks, "\r\n",  get_option('bsd_agree_on_bsd') ); ?></textarea></td>
 					</tr>
 				</tbody>
 			</table>
@@ -114,9 +138,9 @@ function bsd_mail_agree_on_bsd_validate( $input ) {
 
 	if ( true === empty( $input ) ) {
 
-		add_settings_error( 'agree_on_bsd', 'agree_on_bsd', 'Das Textfeld "Zusage des Dienstes an User" darf nicht leer sein.', 'error' );
+		add_settings_error( 'bsd_agree_on_bsd', 'bsd_agree_on_bsd', 'Das Textfeld "Zusage des Dienstes an User" darf nicht leer sein.', 'error' );
 
-		return get_option( 'agree_on_bsd' );
+		return get_option( 'bsd_agree_on_bsd' );
 	}
 
 	return $input;

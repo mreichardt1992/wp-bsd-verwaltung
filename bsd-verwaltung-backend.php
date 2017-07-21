@@ -90,7 +90,14 @@ function bsd_build_data_field( $post ) {
                             $is_fix = 'checked="checked"';
                         }
 
-                        echo '<input type="checkbox" id="bsd_attendant_' . esc_attr( $user->data->ID ) . '" name="bsd_attendants[]" value="' . esc_attr( $user->data->ID ) . '" ' . esc_attr( $is_fix ) . '><label for="bsd_attendant_' . esc_attr( $user->data->ID ) . '" />' . esc_html( $user->data->display_name ) . '&nbsp;<img src ="' . esc_url( plugin_dir_url( __FILE__ ) ) . 'images/truppfuehrer.png" style="width: 15px; vertical-align: middle;" /></label><br />';
+	                    $leader_image = '';
+	                    $leader = get_the_author_meta( 'bsd_leader', $user->ID );
+
+                        if (1 == $leader) {
+                            $leader_image = '<img src ="' . esc_url( plugin_dir_url( __FILE__ ) ) . 'images/truppfuehrer.png" style="width: 15px; vertical-align: middle;" />';
+                        }
+
+                        echo '<input type="checkbox" id="bsd_attendant_' . esc_attr( $user->data->ID ) . '" name="bsd_attendants[]" value="' . esc_attr( $user->data->ID ) . '" ' . esc_attr( $is_fix ) . '><label for="bsd_attendant_' . esc_attr( $user->data->ID ) . '" />' . esc_html( $user->data->display_name ) . '&nbsp;'.$leader_image.'</label><br />';
                     }
                     ?>
                 </td>
@@ -249,13 +256,36 @@ function bsd_save_data_field_data( $post_id ) {
                 )
             );
 
-			bsd_send_mail( $post_id, $bsd_applied_user->user_id, 'agree_on_bsd' );
+			bsd_send_mail( $post_id, $bsd_applied_user->user_id, 'bsd_agree_on_bsd' );
 
 		}
 	}
 }
 
 add_action( 'save_post_bsds', 'bsd_save_data_field_data', 10, 2 );
+
+
+/*
+ * bsd_published_notification_counter
+ *
+ * if a new bsd is published (not edited) count +1 on mail notification counter for the daily mail cron
+ */
+function bsd_published_notification_counter( $id , $post )
+{
+	if ( $post->post_date != $post->post_modified )
+	{
+		// fires when bsd is updated - do nothing
+	}
+	else
+	{
+	    // set notification counter for mail cron +1 when a new bsd is published
+
+		$notification_count = get_option( 'bsd_mail_notification_count', 0 ) + 1;
+		update_option( 'bsd_mail_notification_count', $notification_count );
+	}
+}
+add_action( 'publish_bsds' , 'bsd_published_notification_counter' , 10 , 2 );
+
 
 /*
  * bsd_set_custom_edit_bsds_columns
@@ -349,3 +379,46 @@ function bsd_order_custom_column_by_begin_date( $pieces, $query ) {
 	return $pieces;
 }
 add_filter( 'posts_clauses', 'bsd_order_custom_column_by_begin_date', 1, 2 );
+
+
+function bsd_filter_expired_posts() {
+	$args = array(
+		'posts_per_page'   => 100,
+		'offset'           => 0,
+		'category'         => '',
+		'category_name'    => '',
+		'include'          => '',
+		'exclude'          => '',
+		'post_type'        => 'bsds',
+		'post_mime_type'   => '',
+		'post_parent'      => '',
+		'author'	       => '',
+		'author_name'	   => '',
+		'post_status'      => 'publish',
+		'suppress_filters' => true,
+		'meta_key'         => '_bsd_begin_date',
+		'orderby'          => 'meta_value',
+		'order'            => 'ASC'
+	);
+
+	$posts_array = get_posts( $args );
+
+	foreach ( $posts_array AS $post ) {
+
+		$date = strtotime( date( 'd.m.Y', time() ) );
+
+		$bsd_date = strtotime( date( 'd.m.Y', strtotime( get_post_meta( $post->ID, '_bsd_begin_date', true ) ) ) );
+
+		if ( $bsd_date < $date ) {
+			$post_data = array(
+				'ID'            => $post->ID,
+                'post_status'   => 'trash'
+			);
+
+			// Update the post into the database
+			wp_update_post( $post_data );
+		}
+	}
+}
+
+add_action( 'admin_init', 'bsd_filter_expired_posts' );
