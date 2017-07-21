@@ -4,38 +4,29 @@
 add_action( 'show_user_profile', 'bsd_extra_user_profile_fields' );
 add_action( 'edit_user_profile', 'bsd_extra_user_profile_fields' );
 
-function bsd_extra_user_profile_fields( $user ) {
+function bsd_extra_user_profile_fields( $user ) { ?>
+    <h3>BSD Informationen</h3>
 
-	if (current_user_can('administrator') && is_admin()) {
+	<?php
+        $leader = get_the_author_meta( 'bsd_leader', $user->ID );
 
-		?>
+        $is_leader = '';
+        if ($leader == 1) {
+	        $is_leader = esc_attr('checked="checked"');
+        }
+    ?>
 
+    <table class="form-table">
+        <tr>
+            <th><label for="address">Wachf&uuml;hrer</label></th>
+            <td>
+                <input type="checkbox" name="bsd_leader" value="1" <?php echo $is_leader; ?> >
+                <span class="description"><?php _e("Darf diese Person Wachf&uuml;hrer sein?"); ?></span>
 
-        <h3>BSD Informationen</h3>
-
-		<?php
-		$leader = get_the_author_meta( 'bsd_leader', $user->ID );
-
-		$is_leader = '';
-		if ( 1 == $leader ) {
-			$is_leader = esc_attr( 'checked="checked"' );
-		}
-		?>
-
-        <table class="form-table">
-            <tr>
-                <th><label for="address">Wachf&uuml;hrer</label></th>
-                <td>
-                    <input type="checkbox" name="bsd_leader" value="1" <?php echo $is_leader; ?> >
-                    <span class="description"><?php _e( "Darf diese Person Wachf&uuml;hrer sein?" ); ?></span>
-
-                </td>
-            </tr>
-        </table>
-		<?php
-    }
-
-}
+            </td>
+        </tr>
+    </table>
+<?php }
 
 
 add_action( 'personal_options_update', 'bsd_save_extra_user_profile_fields' );
