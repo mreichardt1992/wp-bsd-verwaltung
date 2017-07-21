@@ -256,13 +256,36 @@ function bsd_save_data_field_data( $post_id ) {
                 )
             );
 
-			bsd_send_mail( $post_id, $bsd_applied_user->user_id, 'agree_on_bsd' );
+			bsd_send_mail( $post_id, $bsd_applied_user->user_id, 'bsd_agree_on_bsd' );
 
 		}
 	}
 }
 
 add_action( 'save_post_bsds', 'bsd_save_data_field_data', 10, 2 );
+
+
+/*
+ * bsd_published_notification_counter
+ *
+ * if a new bsd is published (not edited) count +1 on mail notification counter for the daily mail cron
+ */
+function bsd_published_notification_counter( $id , $post )
+{
+	if ( $post->post_date != $post->post_modified )
+	{
+		// fires when bsd is updated - do nothing
+	}
+	else
+	{
+	    // set notification counter for mail cron +1 when a new bsd is published
+
+		$notification_count = get_option( 'bsd_mail_notification_count', 0 ) + 1;
+		update_option( 'bsd_mail_notification_count', $notification_count );
+	}
+}
+add_action( 'publish_bsds' , 'bsd_published_notification_counter' , 10 , 2 );
+
 
 /*
  * bsd_set_custom_edit_bsds_columns
