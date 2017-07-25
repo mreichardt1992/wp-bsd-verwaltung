@@ -36,6 +36,29 @@
     color: #fff;
 }
 
+#bsd_table {
+    width: 100%;
+}
+
+#bsd_table th, td {
+    border: 1px solid;
+    padding: 5px;
+    text-align: center;
+}
+
+@media (max-width: 1000px) {
+    #bsd_table_wrapper {
+        width:100%;
+        overflow-x: scroll;
+        overflow-y: hidden;
+        white-space: nowrap;
+    }
+
+    #bsd_table {
+        width: 800px;
+    }
+}
+
 #accept_bsd_button {
     -moz-box-shadow:inset 0px 1px 0px 0px #36a7e3;
     -webkit-box-shadow:inset 0px 1px 0px 0px #36a7e3;
@@ -52,6 +75,25 @@
     font-size:12px;
     font-weight:bold;
     padding:8px 20px;
+    text-decoration:none;
+}
+
+#accept_bsd_button_table {
+    -moz-box-shadow:inset 0px 1px 0px 0px #36a7e3;
+    -webkit-box-shadow:inset 0px 1px 0px 0px #36a7e3;
+    box-shadow:inset 0px 1px 0px 0px #36a7e3;
+    background-color:#36a7e3;
+    -moz-border-radius:5px;
+    -webkit-border-radius:5px;
+    border-radius:5px;
+    border:1px solid #36a7e3;
+    display:inline-block;
+    cursor:pointer;
+    color:#ffffff;
+    font-family:Arial;
+    font-size:12px;
+    font-weight:bold;
+    padding: 0 5px;
     text-decoration:none;
 }
 
@@ -74,6 +116,25 @@
     text-decoration:none;
 }
 
+#is-fix-text-table {
+    -moz-box-shadow:inset 0px 1px 0px 0px #44c767;
+    -webkit-box-shadow:inset 0px 1px 0px 0px #44c767;
+    box-shadow:inset 0px 1px 0px 0px #44c767;
+    background-color:#44c767;
+    -moz-border-radius:5px;
+    -webkit-border-radius:5px;
+    border-radius:5px;
+    border:1px solid #44c767;
+    display:inline-block;
+    cursor:default;
+    color:#ffffff;
+    font-family:Arial;
+    font-size:12px;
+    font-weight:bold;
+    padding: 0px 5px;
+    text-decoration:none;
+}
+
 #bsd_full_button {
     -moz-box-shadow:inset 0px 1px 0px 0px #CF3523;
     -webkit-box-shadow:inset 0px 1px 0px 0px #CF3523;
@@ -91,5 +152,24 @@
     font-weight:bold;
     padding:8px 20px;
     text-decoration:none;
-    poin
 }
+
+#bsd_full_button_table {
+    -moz-box-shadow:inset 0px 1px 0px 0px #CF3523;
+    -webkit-box-shadow:inset 0px 1px 0px 0px #CF3523;
+    box-shadow:inset 0px 1px 0px 0px #CF3523;
+    background-color:#CF3523;
+    -moz-border-radius:5px;
+    -webkit-border-radius:5px;
+    border-radius:5px;
+    border:1px solid #CF3523;
+    display:inline-block;
+    cursor:default;
+    color:#ffffff;
+    font-family:Arial;
+    font-size:12px;
+    font-weight:bold;
+    padding: 0px 5px;
+    text-decoration:none;
+}
+
