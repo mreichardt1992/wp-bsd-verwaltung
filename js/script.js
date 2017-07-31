@@ -19,6 +19,9 @@ function bsd_book_user_on_event(user_id, post_id, nonce) {
 
             jQuery('.accept_bsd_button_' + post_id).html('Meldung zur&uuml;ckziehen');
             jQuery('.accept_bsd_button_' + post_id).attr("onclick","bsd_unbook_user_from_event('"+post_id+"', '"+user_id+"', '"+nonce+"');");
+
+            jQuery('.accept_bsd_button_table_' + post_id).html('Meldung zur&uuml;ckziehen');
+            jQuery('.accept_bsd_button_table_' + post_id).attr("onclick","bsd_unbook_user_from_event('"+post_id+"', '"+user_id+"', '"+nonce+"');");
         }
     });
 }
@@ -39,6 +42,11 @@ function bsd_unbook_user_from_event(post_id, user_id, nonce) {
             jQuery('.accept_bsd_button_' + post_id).attr("onclick","bsd_book_user_on_event('"+user_id+"', '"+post_id+"', '"+nonce+"');");
 
             jQuery('#is-fix-text-' + post_id).css('display', 'none');
+
+            jQuery('.accept_bsd_button_table_' + post_id).html('Melden');
+            jQuery('.accept_bsd_button_table_' + post_id).attr("onclick","bsd_book_user_on_event('"+user_id+"', '"+post_id+"', '"+nonce+"');");
+
+            jQuery('#is-fix-text-table-' + post_id).css('display', 'none');
         }
     });
 }

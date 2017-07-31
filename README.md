@@ -4,7 +4,7 @@ Donate link: http://www.bsd-verwaltung.de/donate
 Tags: Feuerwehr, BSD, Rettung, Rettungsdienst, THW, HiOrg, Wasserwacht, Bergrettung, Dienstverwaltung, Dienst, Verwaltung
 Requires at least: 3.5.0
 Tested up to: 4.8
-Stable tag: 1.1.3
+Stable tag: 1.2.0
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -56,6 +56,14 @@ Ich freue mich immer &uuml;ber Feedback. Entweder ihr erstellt ein neues Topic i
 3. &Uuml;bersicht der Felder im Admin-Bereich
 
 == Changelog ==
+
+= 1.2.0 =
+* Abgelaufene BSDs werden nun im Dashboard in den Papierkorb verschoben
+* Das Feld "Wachführer" im Userprofil funktionierte nicht
+* Eine Option für tägliche Benachrichtigungen bei neuen Diensten wurde eingebaut
+* Der Button "Melden" im Frontend ist nun deaktiviert, wenn alle Posten im Dienst besetzt sind
+* Das Styling der Buttons im Frontend wurde nochmals überarbeitet
+* Es wurde eine neue Art der Auflistung für Dienste im Frontend hinzugefügt (Tabelle)
 
 = 1.1.3 =
 * Neues, einheitliches Design für die Buttons im Frontend (Template-unabhängig)
