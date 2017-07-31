@@ -21,10 +21,11 @@ Die prim&auml;re Zielgruppe des Plugins sind Feuerwehren im deutschsprachigen Ra
 Funktionen im &Uuml;berblick:
 
 * Anlegen der Dienste in gewohnter Art und Weise, wie Beitr&auml;ge und Seiten
-* Anzeigen aller zuk&uuml;nftigen Dienste auf der Homepage per Shortcode "BSD_Panel"
+* Anzeigen aller zuk&uuml;nftigen Dienste auf der Homepage per Shortcode "BSD_Panel" oder "BSD_Table"
 * Zugriff auf die ver&ouml;ffentlichten Dienste nur f&uuml;r angemeldete User
 * Markieren von Wachf&uuml;hrern (Verantwortlichen) &uuml;ber das User-Profil
 * E-Mail Benachrichtigungen bei Vergabe der Dienste an betreffende Personen sowie bei R&uuml;ckzug vom Dienst
+* Regelmäßige Benachrichtigung aller User per E-Mail bei neuen Diensten
 * Responsive Design (Mobil-f&auml;hig)
 
 == Installation ==
@@ -48,6 +49,10 @@ Erstellt eine neue Seite und f&uuml;gt dort den Shortcode `[BSD_Panel]` ein.
 = Ich habe einen Fehler im Plugin gefunden oder einen Verbesserungsvorschlag =
 
 Ich freue mich immer &uuml;ber Feedback. Entweder ihr erstellt ein neues Topic im Support-Bereich auf der [Plugin-Seite](https://wordpress.org/plugins/bsd-verwaltung/), erstellt einen Issue auf [GitHub](https://github.com/mreichardt1992/wp-bsd-verwaltung/issues) oder schickt mir eine Nachricht &uuml;ber das [Kontaktformular](http://bsd-verwaltung.de) auf meiner Homepage.
+
+= Gibt es eine Dokumentation zu diesem Plugin? =
+
+Ja. Auf [bsd-verwaltung.de](http://bsd-verwaltung.de) findet Ihr die Doku.
 
 == Screenshots ==
 
@@ -88,13 +93,3 @@ Ich freue mich immer &uuml;ber Feedback. Entweder ihr erstellt ein neues Topic i
 * Verwaltung von Diensten als eigener Beitragstyp
 * Einbinden der zuk&uuml;nfigen Dienste per Shortcode
 * E-Mail Benachrichtigungen bei Zu-/Absagen zu Diensten
-
-== Upgrade Notice ==
-
-= 1.1 =
-Seite für Einstellungen hinzugefügt
-Date- & Timepicker hinzugefügt
-
-
-= 1.0 =
-Erste Version

@@ -17,11 +17,15 @@ function bsd_register_plugin_settings() {
 	register_setting( 'bsd-plugin-settings-group', 'color_picker_panel_header', 'bsd_color_picker_panel_header_validate' );
 	register_setting( 'bsd-plugin-settings-group', 'color_picker_panel_header_active', 'bsd_color_picker_panel_header_active_validate' );
 	register_setting( 'bsd-plugin-settings-group', 'access_for_frontend_panels' );
+	register_setting( 'bsd-plugin-settings-group', 'bsd_enable_daily_mail_notification' );
+
 }
 
 function bsd_options_do_page() {
 
 	$breaks = array( "<br />","<br>","<br/>","&lt;br /&gt;" );
+
+	date_default_timezone_set( 'Europe/Berlin' )
 
 	?>
 	<div class="wrap">
@@ -49,6 +53,28 @@ function bsd_options_do_page() {
                 </tr>
                 </tbody>
             </table>
+
+            <table class="form-table">
+                <tbody>
+                <tr>
+                    <th scope="row"><?php _e( 'T&auml;gliche Benachrichtigungen', 'twentythirteen' ); ?></th>
+                    <td>
+                        <label for="bsd_enable_daily_mail_notification">
+                            <input type="checkbox" name="bsd_enable_daily_mail_notification" id="bsd_enable_daily_mail_notification" value="1" <?php checked( 1, get_option( 'bsd_enable_daily_mail_notification' ), true ); ?> />
+							<?php
+							_e( 'T&auml;glicher Versand einer Benachrichtigungsmail an alle User, wenn neue Dienste eingetragen wurden. Beim Einschalten wird, sofern neue Dienste vorliegen, eine Mail an alle User verschickt. ', 'twentythirteen' );
+							if ( false === wp_next_scheduled( 'bsd_cron_hook' ) ) {
+
+							} else {
+								echo 'N&auml;chster Versand: ' . date( 'd.m.Y, H:i', wp_next_scheduled( 'bsd_cron_hook' ) ) . ' Uhr';
+							}
+							?>
+                        </label>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
 
             <h2><?php _e( 'Farbeinstellungen', 'twentythirteen' ); ?></h2>
 

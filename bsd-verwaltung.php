@@ -428,3 +428,46 @@ function bsd_send_mail( $post_id, $user_id, $mailtype ) {
 function bsd_set_html_mail_content_type() {
 	return 'text/html';
 }
+
+
+function bsd_cron_exec () {
+
+	global $wpdb;
+
+	if ( true === empty( get_option( 'access_for_frontend_panels' ) ) ) {
+		return;
+	}
+
+	$notification_count = get_option( 'bsd_mail_notification_count', 0 );
+
+	if ( $notification_count < 1 ) {
+		return;
+	}
+
+	$user_mails = $wpdb->get_results( "
+        SELECT
+            user_login, display_name, user_email
+        FROM 
+            " . $wpdb->prefix . "users
+    " );
+
+	foreach ($user_mails AS $user_mail) {
+
+		$message = 'Hallo ' . $user_mail->display_name . ',<br><br> auf ' .  get_site_url() . ' gibt es neue Brandsicherheitsdienste. Du findest sie im internen Bereich.<br><br>Bitte antworte nicht auf diese Mail, da sie automatisch generiert wurde.';
+
+		add_filter( 'wp_mail_content_type', 'bsd_set_html_mail_content_type' );
+		wp_mail( $user_mail->user_email, 'Neue BSDs', $message);
+		remove_filter( 'wp_mail_content_type', 'bsd_set_html_mail_content_type' );
+	}
+
+	update_option( 'bsd_mail_notification_count', 0 );
+}
+add_action( 'bsd_cron_hook', 'bsd_cron_exec' );
+
+if ( "1" === get_option( 'bsd_enable_daily_mail_notification', false ) ) {
+	if ( false === wp_next_scheduled( 'bsd_cron_hook' ) ) {
+		wp_schedule_event( time(), 'daily', 'bsd_cron_hook' );
+	}
+} else {
+	wp_unschedule_event( wp_next_scheduled( 'bsd_cron_hook' ), 'bsd_cron_hook' );
+}
