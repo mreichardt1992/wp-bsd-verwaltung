@@ -80,6 +80,28 @@ function bsd_load_css() {
 add_action( 'wp_enqueue_scripts', 'bsd_load_css' );
 
 
+/*
+ * bsd_load_admin_css
+ *
+ * add plugin css files to frontend
+ */
+function bsd_load_admin_css() {
+	wp_enqueue_style( 'bsd_verwaltung_style', plugins_url( '/css/admin_styles.css' , __FILE__ ) );
+}
+add_action( 'admin_enqueue_scripts', 'bsd_load_admin_css' );
+
+/*
+ * bsd_load_admin_js
+ *
+ * add plugin css files to frontend
+ */
+function bsd_load_admin_js() {
+	wp_enqueue_script( 'bsd_verwaltung_script' );
+	wp_register_script( 'bsd_verwaltung_script', plugins_url( '/js/admin_script.js' , __FILE__ ) );
+}
+add_action( 'admin_enqueue_scripts', 'bsd_load_admin_js' );
+
+
 function bsd_add_color_picker() {
 
 	if( is_admin() ) {
@@ -116,7 +138,10 @@ function bsd_create_db() {
       PRIMARY KEY (`id`),
       FOREIGN KEY (user_id) REFERENCES " . $wpdb->prefix . "users (ID),
       FOREIGN KEY (post_id) REFERENCES " . $wpdb->prefix . "posts (ID)
-	) $charset_collate;";
+	) $charset_collate;
+	
+	ALTER TABLE $bsd_table_name_bookings ADD `is_leader` INT NULL DEFAULT NULL AFTER `user_type`;
+	";
 
 	require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 	dbDelta( $sql );
@@ -362,17 +387,31 @@ function bsd_send_mail( $post_id, $user_id, $mailtype ) {
 				$message = get_option( $mailtype );
 
 				$message = str_replace( '[user_name]', $user->display_name, $message );
-				$message = str_replace( '[bsd_title]', $post_data->post_title, $message );
+				$message = str_replace( '[bsd_titel]', $post_data->post_title, $message );
+				$message = str_replace( '[bsd_ort]', get_post_meta( $post_id, '_bsd_location', true ), $message );
 				$message = str_replace( '[bsd_datum]', date('d.m.Y', strtotime( get_post_meta( $post_id, '_bsd_begin_date', true ) ) ), $message );
 				$message = str_replace( '[bsd_uhrzeit]', get_post_meta( $post_id, '_bsd_begin_time', true ), $message );
 				$message = str_replace( '[bsd_anzahl_personen]', get_post_meta( $post_id, '_bsd_count_persons', true ), $message );
 				$message = str_replace( '[bsd_info]', $post_data->post_content, $message );
 
-				$message = nl2br( $message, false );
+				global $wpdb;
+				global $bsd_table_name_bookings;
 
-				add_filter( 'wp_mail_content_type', 'bsd_set_html_mail_content_type' );
-				wp_mail( $to, $subject, $message, $headers );
-				remove_filter( 'wp_mail_content_type', 'bsd_set_html_mail_content_type' );
+				$bsd_applied_user = $wpdb->get_results( $wpdb->prepare( "
+		            SELECT
+							*
+		            FROM
+							$bsd_table_name_bookings
+		            WHERE
+						post_id = %d AND
+						is_leader = 1
+            	", $post_id, $user_id ) );
+
+				$user = get_userdata( $bsd_applied_user[0]->user_id );
+
+				$message = str_replace( '[bsd_wachführer]', $user->data->display_name, $message );
+
+				$message = nl2br( $message, false );
 
 			break;
 		case 'reject_on_bsd_by_admin':
@@ -381,17 +420,14 @@ function bsd_send_mail( $post_id, $user_id, $mailtype ) {
 				$message = get_option( $mailtype );
 
 				$message = str_replace( '[user_name]', $user->display_name, $message );
-				$message = str_replace( '[bsd_title]', $post_data->post_title, $message );
+				$message = str_replace( '[bsd_titel]', $post_data->post_title, $message );
+				$message = str_replace( '[bsd_ort]', get_post_meta( $post_id, '_bsd_location', true ), $message );
 				$message = str_replace( '[bsd_datum]', date('d.m.Y', strtotime( get_post_meta( $post_id, '_bsd_begin_date', true ) ) ), $message );
 				$message = str_replace( '[bsd_uhrzeit]', get_post_meta( $post_id, '_bsd_begin_time', true ), $message );
 				$message = str_replace( '[bsd_anzahl_personen]', get_post_meta( $post_id, '_bsd_count_persons', true ), $message );
 				$message = str_replace( '[bsd_info]', $post_data->post_content, $message );
 
 				$message = nl2br( $message, false );
-
-				add_filter( 'wp_mail_content_type', 'bsd_set_html_mail_content_type' );
-				wp_mail( $to, $subject, $message, $headers);
-				remove_filter( 'wp_mail_content_type', 'bsd_set_html_mail_content_type' );
 
 			break;
 		case 'reject_on_bsd_by_user':
@@ -402,7 +438,8 @@ function bsd_send_mail( $post_id, $user_id, $mailtype ) {
 			$message = get_option( $mailtype );
 
 			$message = str_replace( '[user_name]', $admin->display_name, $message );
-			$message = str_replace( '[bsd_title]', $post_data->post_title, $message );
+			$message = str_replace( '[bsd_titel]', $post_data->post_title, $message );
+			$message = str_replace( '[bsd_ort]', get_post_meta( $post_id, '_bsd_location', true ), $message );
 			$message = str_replace( '[bsd_datum]', date('d.m.Y', strtotime( get_post_meta( $post_id, '_bsd_begin_date', true ) ) ), $message );
 			$message = str_replace( '[bsd_uhrzeit]', get_post_meta( $post_id, '_bsd_begin_time', true ), $message );
 			$message = str_replace( '[bsd_anzahl_personen]', get_post_meta( $post_id, '_bsd_count_persons', true ), $message );
@@ -412,12 +449,12 @@ function bsd_send_mail( $post_id, $user_id, $mailtype ) {
 
 			$to = $admin->user_email;
 
-			add_filter( 'wp_mail_content_type', 'bsd_set_html_mail_content_type' );
-			wp_mail( $to, $subject, $message, $headers );
-			remove_filter( 'wp_mail_content_type', 'bsd_set_html_mail_content_type' );
-
 			break;
 	}
+
+	add_filter( 'wp_mail_content_type', 'bsd_set_html_mail_content_type' );
+	wp_mail( $to, $subject, $message, $headers );
+	remove_filter( 'wp_mail_content_type', 'bsd_set_html_mail_content_type' );
 }
 
 /*

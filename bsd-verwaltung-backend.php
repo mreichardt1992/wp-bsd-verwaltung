@@ -8,7 +8,6 @@
 function bsds_add_data_field() {
 	add_meta_box( 'bsd_data_field', 'BSD Daten', 'bsd_build_data_field', 'BSDs', 'normal', 'low' );
 }
-
 add_action( 'add_meta_boxes_bsds', 'bsds_add_data_field' );
 
 /*
@@ -23,16 +22,11 @@ function bsd_build_data_field( $post ) {
 	global $wpdb;
 	global $bsd_table_name_bookings;
 
-	$current_location      = get_post_meta( $post->ID, '_bsd_location', true );
-	$current_begin_date    = date( 'd.m.Y', strtotime( get_post_meta( $post->ID, '_bsd_begin_date', true ) ) );
-	$current_begin_time    = get_post_meta( $post->ID, '_bsd_begin_time', true );
-	$current_count_persons = get_post_meta( $post->ID, '_bsd_count_persons', true );
-
-
-	$users_leader = get_users( array(
-		'meta_key'   => 'bsd_leader',
-		'meta_value' => '1'
-	) );
+	$current_location       = get_post_meta( $post->ID, '_bsd_location', true );
+	$current_begin_date     = date( 'd.m.Y', strtotime( get_post_meta( $post->ID, '_bsd_begin_date', true ) ) );
+	$current_begin_time     = get_post_meta( $post->ID, '_bsd_begin_time', true );
+	$current_count_persons  = get_post_meta( $post->ID, '_bsd_count_persons', true );
+	$current_bsd_leader     = get_post_meta( $post->ID, '_bsd_leader', true );
 
 	?>
     <div class='inside'>
@@ -67,9 +61,16 @@ function bsd_build_data_field( $post ) {
             </tr>
             <tr>
                 <td>
-                    <label for="bsd_leader_field">Wachposten</label><br />
+                    <table class="bsd_attendant_list">
+                        <tr>
+                            <td></td>
+                            <td>Name</td>
+                            <td>Teilnahme</td>
+                            <td>Wachf&uuml;hrer</td>
+                        </tr>
 
                     <?php
+
 
                     $result = $wpdb->get_results( $wpdb->prepare( "
                                 SELECT
@@ -81,8 +82,20 @@ function bsd_build_data_field( $post ) {
                             ", $post->ID ) );
 
                     foreach ( $result AS $userdata ) {
+                        echo '<tr>';
+
 
                         $user = get_userdata( $userdata->user_id );
+
+	                    $leader_icon = '';
+
+                        if ( get_user_meta( $userdata->user_id, 'bsd_leader' )[0] == 1 ) {
+	                        $leader_icon = '<img src ="' . esc_url( plugin_dir_url( __FILE__ ) ) . 'images/truppfuehrer.png" style="width: 15px; vertical-align: middle;" />';
+                        }
+
+	                    echo '<td>' . $leader_icon . '</td>';
+
+	                    echo '<td>' . esc_html( $user->data->display_name ) . '</td>';
 
                         $is_fix = '';
 
@@ -90,9 +103,21 @@ function bsd_build_data_field( $post ) {
                             $is_fix = 'checked="checked"';
                         }
 
-                        echo '<input type="checkbox" id="bsd_attendant_' . esc_attr( $user->data->ID ) . '" name="bsd_attendants[]" value="' . esc_attr( $user->data->ID ) . '" ' . esc_attr( $is_fix ) . '><label for="bsd_attendant_' . esc_attr( $user->data->ID ) . '" />' . esc_html( $user->data->display_name ) . '&nbsp;<img src ="' . esc_url( plugin_dir_url( __FILE__ ) ) . 'images/truppfuehrer.png" style="width: 15px; vertical-align: middle;" /></label><br />';
+                        $checked_output = '';
+
+                        if ( $current_bsd_leader === $user->data->ID ) {
+	                        $checked_output = 'checked="checked"';
+                        }
+
+                        echo '<td><input type="checkbox" id="bsd_attendant_' . esc_attr( $user->data->ID ) . '" name="bsd_attendants[]" value="' . esc_attr( $user->data->ID ) . '" ' . esc_attr( $is_fix ) . '></td>';
+
+	                    echo '<td><input type="radio" ' . $checked_output . ' id="bsd_leader_' . esc_attr( $user->data->ID ) . '" name="bsd_leader" value="' . esc_attr( $user->data->ID ) . '"></td>';
+
+                        echo '</tr>';
                     }
                     ?>
+                    </table>
+
                 </td>
             </tr>
         </table>
@@ -203,12 +228,24 @@ function bsd_save_data_field_data( $post_id ) {
 
 	foreach ( $bsd_applied_users AS $bsd_applied_user ) {
 
+		if ( isset( $_REQUEST['bsd_leader'] ) ) {
+			$leader_id = $_REQUEST['bsd_leader'];
+
+			$is_leader = 0;
+
+			if ( $leader_id == $bsd_applied_user->user_id ) {
+				$is_leader = 1;
+				update_post_meta( $post_id, '_bsd_leader', sanitize_text_field( $leader_id ) );
+            }
+	    }
+
 		if ( true === empty( $bsd_attendants_set_fix ) ) {
 
 			$wpdb->update( $bsd_table_name_bookings,
                 array(
 			        'is_fix'        => 0,
-                    'fix_mail_sent' => null
+                    'fix_mail_sent' => null,
+			        'is_leader' => $is_leader
 			    ), array(
                     'post_id' => $post_id,
                     'user_id' => $bsd_applied_user->user_id
@@ -226,7 +263,8 @@ function bsd_save_data_field_data( $post_id ) {
 			$wpdb->update( $bsd_table_name_bookings,
                 array(
                     'is_fix'        => 0,
-                    'fix_mail_sent' => null
+                    'fix_mail_sent' => null,
+                    'is_leader' => $is_leader
 			    ),
                 array(
                     'post_id' => $post_id,
@@ -241,7 +279,8 @@ function bsd_save_data_field_data( $post_id ) {
 			$wpdb->update( $bsd_table_name_bookings,
                 array(
                     'is_fix'        => 1,
-                    'fix_mail_sent' => date( 'Y-m-d H:s', time() )
+                    'fix_mail_sent' => date( 'Y-m-d H:s', time() ),
+                    'is_leader' => $is_leader
 			    ),
                 array(
                     'post_id' => $post_id,
@@ -251,6 +290,20 @@ function bsd_save_data_field_data( $post_id ) {
 
 			bsd_send_mail( $post_id, $bsd_applied_user->user_id, 'agree_on_bsd' );
 
+		} elseif ( true === in_array( $bsd_applied_user->user_id, $bsd_attendants_set_fix ) && $bsd_applied_user->is_fix == 1 ) {
+			$wpdb->update( $bsd_table_name_bookings,
+				array(
+					'is_fix'        => 1,
+					'fix_mail_sent' => date( 'Y-m-d H:s', time() ),
+					'is_leader' => $is_leader
+				),
+				array(
+					'post_id' => $post_id,
+					'user_id' => $bsd_applied_user->user_id
+				)
+			);
+
+			bsd_send_mail( $post_id, $bsd_applied_user->user_id, 'agree_on_bsd' );
 		}
 	}
 }

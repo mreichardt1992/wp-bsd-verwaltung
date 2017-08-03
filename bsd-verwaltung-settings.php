@@ -95,7 +95,7 @@ function bsd_options_do_page() {
 			<p>
 				Hier k&ouml;nnen die Texte der vom Plugin versendeten E-Mails angepasst werden. Es stehen Platzhalter zur Verf&uuml;gung, die vor dem Versenden der E-Mail durch die korrekten Inhalte ausgetauscht werden.
 				<br /><br />
-				Platzhalter: [user_name] [bsd_title] [bsd_datum] [bsd_uhrzeit] [bsd_anzahl_personen] [bsd_info]
+				Platzhalter: [user_name] [bsd_titel] [bsd_ort] [bsd_datum] [bsd_uhrzeit] [bsd_anzahl_personen] [bsd_info] [bsd_wachf&uuml;hrer]
 			</p>
 
 			<table class="form-table">
