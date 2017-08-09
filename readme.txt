@@ -4,7 +4,7 @@ Donate link: http://www.bsd-verwaltung.de/donate
 Tags: Feuerwehr, BSD, Rettung, Rettungsdienst, THW, HiOrg, Wasserwacht, Bergrettung, Dienstverwaltung, Dienst, Verwaltung
 Requires at least: 3.5.0
 Tested up to: 4.8
-Stable tag: 1.2.1
+Stable tag: 1.2.2
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -61,6 +61,9 @@ Ja. Auf [bsd-verwaltung.de](http://bsd-verwaltung.de) findet Ihr die Doku.
 3. &Uuml;bersicht der Felder im Admin-Bereich
 
 == Changelog ==
+
+= 1.2.2 =
+* Bugfix für die Datenbank, nachdem nach dem letzten Update eine Tabellenspalte fehlte
 
 = 1.2.1 =
 * Überarbeitung der Liste der gemeldeten User im Backend

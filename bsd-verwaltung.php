@@ -4,7 +4,7 @@
 Plugin Name: BSD Verwaltung
 Plugin URI:  http://bsd-verwaltung.de
 Description: Verwaltung und Vergabe von (Brandsicherheits-)Diensten an die Mannschaft der Feuerwehr
-Version:     1.2.1
+Version:     1.2.2
 Author:      Max Reichardt
 License:     GPLv2
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -133,20 +133,46 @@ function bsd_create_db() {
       `user_id` bigint(20) NOT NULL,
       `post_id` bigint(20) NOT NULL,
       `user_type` bigint(20) NOT NULL,
+      `is_leader` bigint(20) NULL DEFAULT NULL,
       `is_fix` bigint(20) NOT NULL,
       `fix_mail_sent` timestamp NULL DEFAULT NULL,
       PRIMARY KEY (`id`),
       FOREIGN KEY (user_id) REFERENCES " . $wpdb->prefix . "users (ID),
       FOREIGN KEY (post_id) REFERENCES " . $wpdb->prefix . "posts (ID)
 	) $charset_collate;
-	
-	ALTER TABLE $bsd_table_name_bookings ADD `is_leader` INT NULL DEFAULT NULL AFTER `user_type`;
 	";
+
+	update_option('bsd_current_db_version', 1);
 
 	require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 	dbDelta( $sql );
 }
 register_activation_hook( __FILE__, 'bsd_create_db' );
+
+/*
+ * bsd_add_default_values_settings
+ *
+ * add options to wp settings API
+ */
+function bsd_update_db() {
+	global $wpdb;
+	global $bsd_table_name_bookings;
+
+	$current_version = get_option('bsd_current_db_version', 0);
+
+	switch($current_version)
+	{
+		// First update
+		case 1:
+
+			$wpdb->query("ALTER TABLE $bsd_table_name_bookings ADD is_leader bigint(20) NULL DEFAULT NULL");
+
+			$current_version++;
+	}
+
+	update_option('bsd_current_db_version', $current_version);
+}
+add_action('plugins_loaded', 'bsd_update_db');
 
 /*
  * bsd_add_default_values_settings
