@@ -394,10 +394,6 @@ add_action( 'wp_ajax_bsd_unbook_user_from_event', 'bsd_unbook_user_from_event' )
  */
 function bsd_send_mail( $post_id, $user_id, $mailtype ) {
 
-	$headers = array(
-		'From' => 'BSD-Verwaltung <bsd@ffbn.de>'
-	);
-
 	$post_data = get_post( $post_id );
 
 	$user = get_userdata( $user_id );
@@ -478,8 +474,26 @@ function bsd_send_mail( $post_id, $user_id, $mailtype ) {
 			break;
 	}
 
+	add_filter( 'wp_mail_from', function() {
+
+		$domain = get_site_url();
+
+		$domain = str_replace( 'http://', '', $domain );
+		$domain = str_replace( 'https://', '', $domain );
+		$domain = str_replace( 'www.', '', $domain );
+
+		$domain = 'BSD-Verwaltung@' . $domain;
+
+		return $domain;
+
+	});
+
+	add_filter( 'wp_mail_from_name', function() {
+		return 'BSD-Verwaltung';
+	});
+
 	add_filter( 'wp_mail_content_type', 'bsd_set_html_mail_content_type' );
-	wp_mail( $to, $subject, $message, $headers );
+	wp_mail( $to, $subject, $message );
 	remove_filter( 'wp_mail_content_type', 'bsd_set_html_mail_content_type' );
 }
 
