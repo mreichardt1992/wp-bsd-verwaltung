@@ -469,8 +469,21 @@ function bsd_send_mail( $post_id, $user_id, $mailtype ) {
 
 			$message = nl2br( $message , false );
 
-			$to = $admin->user_email;
+			$args = array(
+				'role__in'     => array('wehrfhrung', 'administrator'),
+			);
 
+			$admin_users = get_users( $args );
+
+			$to = array();
+
+			foreach ($admin_users AS $user) {
+
+				$userdata = get_userdata( $user->ID );
+
+				$to[] = $userdata->user_email;
+
+			}
 			break;
 	}
 

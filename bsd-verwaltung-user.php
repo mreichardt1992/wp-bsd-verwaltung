@@ -14,7 +14,7 @@ function bsd_extra_user_profile_fields( $user ) {
         <h3>BSD Informationen</h3>
 
 		<?php
-		$leader = get_the_author_meta( 'bsd_leader', $user->ID );
+		$leader = get_user_meta( $user->ID, 'bsd_leader', true );
 
 		$is_leader = '';
 		if ( 1 == $leader ) {
