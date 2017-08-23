@@ -394,6 +394,9 @@ add_action( 'wp_ajax_bsd_unbook_user_from_event', 'bsd_unbook_user_from_event' )
  */
 function bsd_send_mail( $post_id, $user_id, $mailtype ) {
 
+	global $wpdb;
+	global $bsd_table_name_bookings;
+
 	$post_data = get_post( $post_id );
 
 	$user = get_userdata( $user_id );
@@ -415,9 +418,6 @@ function bsd_send_mail( $post_id, $user_id, $mailtype ) {
 				$message = str_replace( '[bsd_uhrzeit]', get_post_meta( $post_id, '_bsd_begin_time', true ), $message );
 				$message = str_replace( '[bsd_anzahl_personen]', get_post_meta( $post_id, '_bsd_count_persons', true ), $message );
 				$message = str_replace( '[bsd_info]', $post_data->post_content, $message );
-
-				global $wpdb;
-				global $bsd_table_name_bookings;
 
 				$bsd_applied_user = $wpdb->get_results( $wpdb->prepare( "
 		            SELECT
@@ -449,6 +449,20 @@ function bsd_send_mail( $post_id, $user_id, $mailtype ) {
 				$message = str_replace( '[bsd_anzahl_personen]', get_post_meta( $post_id, '_bsd_count_persons', true ), $message );
 				$message = str_replace( '[bsd_info]', $post_data->post_content, $message );
 
+				$bsd_applied_user = $wpdb->get_results( $wpdb->prepare( "
+			            SELECT
+								*
+			            FROM
+								$bsd_table_name_bookings
+			            WHERE
+							post_id = %d AND
+							is_leader = 1
+	                ", $post_id, $user_id ) );
+
+				$user = get_userdata( $bsd_applied_user[0]->user_id );
+
+				$message = str_replace( '[bsd_wachführer]', $user->data->display_name, $message );
+
 				$message = nl2br( $message, false );
 
 			break;
@@ -459,13 +473,27 @@ function bsd_send_mail( $post_id, $user_id, $mailtype ) {
 
 			$message = get_option( $mailtype );
 
-			$message = str_replace( '[user_name]', $admin->display_name, $message );
+			$message = str_replace( '[user_name]', $user->display_name, $message );
 			$message = str_replace( '[bsd_titel]', $post_data->post_title, $message );
 			$message = str_replace( '[bsd_ort]', get_post_meta( $post_id, '_bsd_location', true ), $message );
 			$message = str_replace( '[bsd_datum]', date('d.m.Y', strtotime( get_post_meta( $post_id, '_bsd_begin_date', true ) ) ), $message );
 			$message = str_replace( '[bsd_uhrzeit]', get_post_meta( $post_id, '_bsd_begin_time', true ), $message );
 			$message = str_replace( '[bsd_anzahl_personen]', get_post_meta( $post_id, '_bsd_count_persons', true ), $message );
 			$message = str_replace( '[bsd_info]', $post_data->post_content, $message );
+
+			$bsd_applied_user = $wpdb->get_results( $wpdb->prepare( "
+			            SELECT
+								*
+			            FROM
+								$bsd_table_name_bookings
+			            WHERE
+							post_id = %d AND
+							is_leader = 1
+	                ", $post_id, $user_id ) );
+
+			$user = get_userdata( $bsd_applied_user[0]->user_id );
+
+			$message = str_replace( '[bsd_wachführer]', $user->data->display_name, $message );
 
 			$message = nl2br( $message , false );
 
