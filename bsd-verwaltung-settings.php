@@ -18,6 +18,7 @@ function bsd_register_plugin_settings() {
 	register_setting( 'bsd-plugin-settings-group', 'color_picker_panel_header_active', 'bsd_color_picker_panel_header_active_validate' );
 	register_setting( 'bsd-plugin-settings-group', 'access_for_frontend_panels' );
 	register_setting( 'bsd-plugin-settings-group', 'bsd_enable_daily_mail_notification' );
+	register_setting( 'bsd-plugin-settings-group', 'show_attended_users' );
 
 }
 
@@ -48,6 +49,20 @@ function bsd_options_do_page() {
                         <label for="access_for_frontend_panels">
                             <input type="checkbox" name="access_for_frontend_panels" id="access_for_frontend_panels" value="1" <?php checked( 1, get_option( 'access_for_frontend_panels' ), true ); ?> />
 	                        <?php _e( 'Zugriff auf Dienste nur f&uuml;r angemeldete User?', 'twentythirteen' ); ?>
+                        </label>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+            <table class="form-table">
+                <tbody>
+                <tr>
+                    <th scope="row"><?php _e( 'Teilnehmer anzeigen', 'twentythirteen' ); ?></th>
+                    <td>
+                        <label for="show_attended_users">
+                            <input type="checkbox" name="show_attended_users" id="show_attended_users" value="1" <?php checked( 1, get_option( 'show_attended_users' ), true ); ?> />
+							<?php _e( 'Gesetzte User in Diensten anzeigen?', 'twentythirteen' ); ?>
                         </label>
                     </td>
                 </tr>

@@ -2,6 +2,9 @@
 
 function bsd_draw_events_panel() {
 
+	global $wpdb;
+	global $bsd_table_name_bookings;
+
 	$user = wp_get_current_user();
 
 	if ( false === empty( get_option('access_for_frontend_panels') ) && 0 == $user->data->ID ) {
@@ -91,6 +94,37 @@ function bsd_draw_events_panel() {
 					$panel .=  '<b>' . __( "Ort:", "wp-bsd-verwaltung" ) . ' </b>' . esc_html( get_post_meta( $post->ID, '_bsd_location', true ) ) . " | ";
 					$panel .=  '<b>' . __( "Anzahl Posten:", "wp-bsd-verwaltung" ) . ' </b>' . esc_html( get_post_meta( $post->ID, '_bsd_count_persons', true ) ) . " | ";
 			        $panel .=  '<b>' . __( "Freie Posten:", "wp-bsd-verwaltung" ) . ' </b>' . esc_html( $free_cnt_places ) . '<br /><br />';
+
+					if ( false === empty( get_option('show_attended_users') ) ) {
+
+						$result = $wpdb->get_results( $wpdb->prepare( "
+                                SELECT
+                                    *
+                                FROM
+                                    $bsd_table_name_bookings
+                                WHERE
+                                    post_id = %d					        					    
+                            ", $post->ID ) );
+
+						if ( false === empty( $result ) ) {
+
+							$panel .=  '<b>' . __( "Teilnehmer:", "wp-bsd-verwaltung" ) . ' </b>';
+
+							foreach ( $result AS $userdata ) {
+
+								$user = get_userdata( $userdata->user_id );
+
+								$panel .= $user->data->display_name . ', ';
+
+							}
+
+							$panel = substr( $panel, 0, -2 );
+
+							$panel .= '<br><br>';
+
+						}
+					}
+
 			        $panel .=  $post_data->post_content;
 			        $panel .= '</p>';
 
