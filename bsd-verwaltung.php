@@ -4,7 +4,7 @@
 Plugin Name: BSD Verwaltung
 Plugin URI:  http://bsd-verwaltung.de
 Description: Verwaltung und Vergabe von (Brandsicherheits-)Diensten an die Mannschaft der Feuerwehr
-Version:     1.2.2
+Version:     1.2.3
 Author:      Max Reichardt
 License:     GPLv2
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
