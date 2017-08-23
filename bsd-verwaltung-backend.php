@@ -322,6 +322,7 @@ function bsd_set_custom_edit_bsds_columns( $columns ) {
 
 	$columns['bsd_location']   = __( 'Ort', 'twentythirteen' );
 	$columns['bsd_begin_date'] = __( 'Dienstbeginn', 'twentythirteen' );
+	$columns['bsd_get_users_fix'] = __( 'Meldungen / Fix', 'twentythirteen' );
 
 	return $columns;
 }
@@ -335,6 +336,9 @@ add_filter( 'manage_bsds_posts_columns', 'bsd_set_custom_edit_bsds_columns' );
  * Add the data to the custom columns for the BSDs post type
  */
 function bsd_custom_bsds_column( $column, $post_id ) {
+
+	global $wpdb;
+	global $bsd_table_name_bookings;
 
 	switch ( $column ) {
 
@@ -353,6 +357,39 @@ function bsd_custom_bsds_column( $column, $post_id ) {
 				echo $terms;
 			} else {
 				_e( 'Kein Datum verf&uuml;gbar', 'twentythirteen' );
+			}
+			break;
+
+		case 'bsd_get_users_attended_fix' :
+
+			$result_attended = $wpdb->get_results( $wpdb->prepare( "
+                                SELECT
+                                    *
+                                FROM
+                                    $bsd_table_name_bookings
+                                WHERE
+                                    post_id = %d					        					    
+                            ", $post_id ) );
+
+			$result_fix = $wpdb->get_results( $wpdb->prepare( "
+                                SELECT
+                                    *
+                                FROM
+                                    $bsd_table_name_bookings
+                                WHERE
+                                    post_id = %d AND 
+                                    is_fix = 1					        					    
+                            ", $post_id ) );
+
+			$count_users_attended = count( $result_attended );
+
+			$count_users_fix = count( $result_fix );
+
+			$terms = (string) $count_users_attended . ' / ' . (string) $count_users_fix;
+			if ( is_string( $terms ) ) {
+				echo $terms;
+			} else {
+				_e( 'Keine Daten verf&uuml;gbar', 'twentythirteen' );
 			}
 			break;
 
