@@ -86,7 +86,7 @@ add_action( 'wp_enqueue_scripts', 'bsd_load_css' );
  * add plugin css files to frontend
  */
 function bsd_load_admin_css() {
-	wp_enqueue_style( 'bsd_verwaltung_style', plugins_url( '/css/admin_styles.css' , __FILE__ ) );
+	wp_enqueue_style( 'bsd_verwaltung_admin_style', plugins_url( '/css/admin_styles.css' , __FILE__ ) );
 }
 add_action( 'admin_enqueue_scripts', 'bsd_load_admin_css' );
 
@@ -98,6 +98,10 @@ add_action( 'admin_enqueue_scripts', 'bsd_load_admin_css' );
 function bsd_load_admin_js() {
 	wp_enqueue_script( 'bsd_verwaltung_script' );
 	wp_register_script( 'bsd_verwaltung_script', plugins_url( '/js/admin_script.js' , __FILE__ ) );
+
+	wp_enqueue_script( 'jquery-ui-core' );
+	wp_enqueue_script( 'jquery-ui-autocomplete' );
+
 }
 add_action( 'admin_enqueue_scripts', 'bsd_load_admin_js' );
 
@@ -338,7 +342,7 @@ add_action( 'wp_ajax_bsd_book_user_on_event', 'bsd_book_user_on_event' );
  * delete User from BSD table
  */
 function bsd_unbook_user_from_event() {
-	if ( ! wp_verify_nonce( $_POST['nonce'], "ajaxloadpost_nonce_" . $_POST['user_id'] ) ) {
+	if ( ! wp_verify_nonce( $_POST['nonce'], "ajaxloadpost_nonce_" . wp_get_current_user()->ID ) ) {
 		exit( "Wrong nonce" );
 	}
 

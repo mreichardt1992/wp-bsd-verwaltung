@@ -64,9 +64,9 @@ function bsd_build_data_field( $post ) {
                     <table class="bsd_attendant_list">
                         <tr>
                             <td></td>
-                            <td>Name</td>
-                            <td>Teilnahme</td>
-                            <td>Wachf&uuml;hrer</td>
+                            <td><b>Name</b></td>
+                            <td><b>Teilnahme</b></td>
+                            <td><b>Wachf&uuml;hrer</b></td>
                         </tr>
 
                     <?php
@@ -115,14 +115,101 @@ function bsd_build_data_field( $post ) {
 
                         echo '</tr>';
                     }
+
                     ?>
                     </table>
+                    <br>
 
+                    <?php
+                        bsd_user_autocomplete_js($result, $post->ID);
+                    ?>
+
+                    <input type="text" name="autocomplete" id="autocomplete" value="" placeholder="User hinzuf&uuml;gen..." />
                 </td>
             </tr>
         </table>
     </div>
 	<?php
+}
+
+function bsd_user_autocomplete_js( $set_users, $post_id ) {
+
+	$nonce = wp_create_nonce( "ajaxloadpost_nonce" );
+
+	$set_user_array = array();
+
+	foreach ( $set_users as $set_user ) {
+		$set_user_array[] = $set_user->user_id;
+    }
+
+    $args = array(
+                'order_by' => 'name',
+                'exclude' => $set_user_array
+            );
+
+	$users = get_users( $args );
+
+	if( $users ) {
+		foreach ( $users as $k => $user ) {
+			$source[ $k ]['ID']    = $user->ID;
+			$source[ $k ]['label'] = $user->display_name;
+		}
+
+		?>
+        <script type="text/javascript">
+            jQuery( document ).ready(function ( $ ) {
+                var users = <?php echo json_encode( array_values( $source ) ); ?>;
+
+                jQuery( 'input[name="autocomplete"]' ).autocomplete({
+                    source: users,
+                    minLength: 2,
+                    select: function ( event, ui ) {
+
+                        jQuery( '.bsd_attendant_list > tbody:last-child' ).append( '<tr><td></td><td>' + ui.item.value + '</td><td><input type="checkbox" id="bsd_attendant_' + ui.item.ID + '" name="bsd_attendants[]" value="' + ui.item.ID + '" ></td><td><input type="radio" id="bsd_leader_' + ui.item.ID + '" name="bsd_leader" value="' + ui.item.ID + '" disabled="disabled"></td></tr>' );
+
+                        jQuery( "input[name='bsd_attendants[]']" ).each( function () {
+
+                            var user_id = jQuery( this ).attr( 'value' );
+                            var checked = jQuery( this ).attr( 'checked' );
+                            var radio = jQuery( '#bsd_leader_' + user_id );
+
+                            if ( !checked ) {
+                                jQuery( '#bsd_leader_' + user_id ).attr( 'disabled', 'disabled' );
+                                jQuery( '#bsd_leader_' + user_id ).removeAttr( 'checked' );
+                            } else {
+                                jQuery( '#bsd_leader_' + user_id ).removeAttr( 'disabled' );
+                            }
+
+                            jQuery( this ).click( function () {
+                                if ( jQuery( this ).is( ':checked' ) ) {
+                                    radio.removeAttr( 'disabled' );
+                                } else {
+                                    radio.attr( 'disabled', 'disabled' );
+                                    radio.removeAttr( 'checked' );
+                                }
+                            })
+
+                        });
+
+                        jQuery.ajax({
+                            type: "POST",
+                            url: "<?php echo admin_url( 'admin-ajax.php' ); ?>",
+                            data: {
+                                action: 'bsd_add_user_to_event_by_admin',
+                                user_id: ui.item.ID,
+                                post_id: "<?php echo $post_id; ?>",
+                                nonce: "<?php echo $nonce; ?>"
+                            },
+                            success: function () {
+
+                            }
+                        });
+                    }
+                });
+            });
+        </script>
+		<?php
+	}
 }
 
 /*

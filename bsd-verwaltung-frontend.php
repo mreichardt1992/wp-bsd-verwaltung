@@ -103,7 +103,8 @@ function bsd_draw_events_panel() {
                                 FROM
                                     $bsd_table_name_bookings
                                 WHERE
-                                    post_id = %d					        					    
+                                    post_id = %d AND 
+                                    is_fix = 1				        					    
                             ", $post->ID ) );
 
 						if ( false === empty( $result ) ) {
@@ -112,9 +113,9 @@ function bsd_draw_events_panel() {
 
 							foreach ( $result AS $userdata ) {
 
-								$user = get_userdata( $userdata->user_id );
+								$user_set = get_userdata( $userdata->user_id );
 
-								$panel .= $user->data->display_name . ', ';
+								$panel .= $user_set->data->display_name . ', ';
 
 							}
 
