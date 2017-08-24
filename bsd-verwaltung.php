@@ -336,6 +336,45 @@ function bsd_book_user_on_event() {
 add_action( 'wp_ajax_nopriv_bsd_book_user_on_event', 'bsd_book_user_on_event' );
 add_action( 'wp_ajax_bsd_book_user_on_event', 'bsd_book_user_on_event' );
 
+
+/*
+ * bsd_add_user_to_event_by_admin
+ *
+ * add User to BSD table
+ */
+function bsd_add_user_to_event_by_admin() {
+	if ( ! wp_verify_nonce( $_POST['nonce'], "ajaxloadpost_nonce" ) ) {
+		exit( "Wrong nonce" );
+	}
+
+	global $wpdb;
+	global $bsd_table_name_bookings;
+
+	$post_id = intval( $_POST['post_id'] );
+	$user_id = intval( $_POST['user_id'] );
+
+	if ( ! $post_id ) {
+		return false;
+	}
+
+	if ( ! $user_id ) {
+		return false;
+	}
+
+	$data = array(
+		'post_id' => $post_id,
+		'user_id' => $user_id
+	);
+
+	$insert = $wpdb->insert( $bsd_table_name_bookings, $data );
+
+	echo $insert;
+
+	wp_die();
+}
+add_action( 'wp_ajax_nopriv_bsd_add_user_to_event_by_admin', 'bsd_add_user_to_event_by_admin' );
+add_action( 'wp_ajax_bsd_add_user_to_event_by_admin', 'bsd_add_user_to_event_by_admin' );
+
 /*
  * bsd_unbook_user_from_event
  *
