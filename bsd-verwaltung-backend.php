@@ -409,7 +409,7 @@ function bsd_set_custom_edit_bsds_columns( $columns ) {
 
 	$columns['bsd_location']   = __( 'Ort', 'twentythirteen' );
 	$columns['bsd_begin_date'] = __( 'Dienstbeginn', 'twentythirteen' );
-	$columns['bsd_get_users_fix'] = __( 'Meldungen / Fix', 'twentythirteen' );
+	$columns['bsd_get_users_attended_fix'] = __( 'Meldungen / Fix', 'twentythirteen' );
 
 	return $columns;
 }

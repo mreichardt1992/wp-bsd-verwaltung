@@ -38,6 +38,7 @@ if ( true === is_admin() ) {
 
 	include_once 'bsd-verwaltung-user.php';
 	include_once 'bsd-verwaltung-backend.php';
+	include_once 'bsd-verwaltung-report.php';
 	include_once 'bsd-verwaltung-settings.php';
 
 	wp_enqueue_script( 'bsd_verwaltung_timepicker_script', plugins_url( 'js/timepicker/jquery.timepicker.min.js' , __FILE__ ) );
@@ -258,7 +259,7 @@ function bsd_get_event_count_persons( $post_id = 0, $option = 'all' ) {
  *
  *
  */
-function bsd_get_event_data( $user_id = 0, $post_id = 0, $is_fix = false, $return_type = 'all_data' ) {
+function bsd_get_event_data( $user_id = 0, $post_id = 0, $is_fix = false, $return_type = 'all_events' ) {
 	global $wpdb;
 	global $bsd_table_name_bookings;
 

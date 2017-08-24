@@ -42,3 +42,34 @@ jQuery(document).ready( function () {
     } );
 
 });
+
+function bsd_print_upcoming_bsds_report() {
+
+    var divToPrint=document.getElementById("bsd_export_table");
+    newWin= window.open("");
+
+    newWin.document.write(
+        "<style>table { width: 100%; border: 1px solid; text-align: left; font-family: Arial; } th,tr,td { border: 1px solid; padding: 2px; }</style>"
+    );
+
+    newWin.document.write(divToPrint.outerHTML);
+    newWin.print();
+    newWin.close();
+
+}
+
+
+function bsd_print_bsd_user_statistics_report() {
+
+    var divToPrint=document.getElementById("bsd_report_userstatistics_table");
+    newWin= window.open("");
+
+    newWin.document.write(
+        "<style>table { width: 100%; border: 1px solid; text-align: left; font-family: Arial; } th,tr,td { border: 1px solid; padding: 2px; }</style>"
+    );
+
+    newWin.document.write(divToPrint.outerHTML);
+    newWin.print();
+    newWin.close();
+
+}
