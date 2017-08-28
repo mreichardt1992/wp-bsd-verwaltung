@@ -84,7 +84,6 @@ function bsd_build_data_field( $post ) {
                     foreach ( $result AS $userdata ) {
                         echo '<tr>';
 
-
                         $user = get_userdata( $userdata->user_id );
 
 	                    $leader_icon = '';
@@ -121,10 +120,21 @@ function bsd_build_data_field( $post ) {
                     <br>
 
                     <?php
-                        bsd_user_autocomplete_js($result, $post->ID);
+
+                        $input_disabled = '';
+                        $input_disabled_hint = '';
+
+                        if ( $post->post_status == 'publish' ) {
+	                        bsd_user_autocomplete_js( $result, $post->ID );
+                        } else {
+                            $input_disabled = esc_attr( 'disabled="disabled"' );
+	                        $input_disabled_hint =  esc_html( 'Vor Hinzuf&uuml;gen von Personen Dienst erst ver&ouml;ffentlichen!' );
+                        }
+
                     ?>
 
-                    <input type="text" name="autocomplete" id="autocomplete" value="" placeholder="User hinzuf&uuml;gen..." />
+                    <input type="text" name="autocomplete" id="autocomplete" value="" placeholder="User hinzuf&uuml;gen..." <?php echo $input_disabled; ?> />
+                    <?php echo '<p style="color: gray;">' . $input_disabled_hint . '</p>'; ?>
                 </td>
             </tr>
         </table>
@@ -197,8 +207,8 @@ function bsd_user_autocomplete_js( $set_users, $post_id ) {
                             data: {
                                 action: 'bsd_add_user_to_event_by_admin',
                                 user_id: ui.item.ID,
-                                post_id: "<?php echo $post_id; ?>",
-                                nonce: "<?php echo $nonce; ?>"
+                                post_id: "<?php echo esc_js( $post_id ); ?>",
+                                nonce: "<?php echo esc_js( $nonce ); ?>"
                             },
                             success: function () {
 
@@ -240,11 +250,11 @@ function bsd_save_data_field_data( $post_id ) {
 
 	    $bsd_location = $_POST['bsd_location'];
 
-	    if ( false === is_string($bsd_location) ) {
+	    if ( false === is_string( $bsd_location ) ) {
 		    $bsd_location = '';
         }
 
-        if ( strlen($bsd_location) > 30 ) {
+        if ( strlen($bsd_location ) > 30 ) {
 		    $bsd_location = '';
         }
 
@@ -254,13 +264,13 @@ function bsd_save_data_field_data( $post_id ) {
 	if ( isset( $_REQUEST['bsd_begin_date'] ) ) {
 
 	    $begin_date = date( 'Y-m-d', strtotime( $_POST['bsd_begin_date'] ) );
-		$today = date("Y-m-d");
+		$today = date( "Y-m-d" );
 
 	    if ( $begin_date < $today ) {
 		    $begin_date = $today;
         }
 
-	    if ( 10 !== strlen($begin_date) ) {
+	    if ( 10 !== strlen( $begin_date ) ) {
 		    $begin_date = $today;
         }
 
@@ -274,9 +284,9 @@ function bsd_save_data_field_data( $post_id ) {
 	if ( isset( $_REQUEST['bsd_begin_time'] ) ) {
 
 	    $begin_time = $_POST['bsd_begin_time'];
-	    $now = date("H:s");
+	    $now = date( "H:s" );
 
-		if ( 5 !== strlen($begin_time) ) {
+		if ( 5 !== strlen( $begin_time ) ) {
 			$begin_time = $now;
 		}
 
@@ -322,7 +332,7 @@ function bsd_save_data_field_data( $post_id ) {
 
 			if ( $leader_id == $bsd_applied_user->user_id ) {
 				$is_leader = 1;
-				update_post_meta( $post_id, '_bsd_leader', sanitize_text_field( $leader_id ) );
+				update_post_meta( $post_id, '_bsd_leader', $leader_id );
             }
 	    }
 

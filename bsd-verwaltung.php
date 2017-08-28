@@ -147,7 +147,7 @@ function bsd_create_db() {
 	) $charset_collate;
 	";
 
-	update_option('bsd_current_db_version', 1);
+	update_option( 'bsd_current_db_version', 1 );
 
 	require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 	dbDelta( $sql );
@@ -163,21 +163,63 @@ function bsd_update_db() {
 	global $wpdb;
 	global $bsd_table_name_bookings;
 
-	$current_version = get_option('bsd_current_db_version', 0);
+	$current_version = get_option( 'bsd_current_db_version', 0 );
 
-	switch($current_version)
+	switch( $current_version )
 	{
 		// First update
 		case 1:
 
-			$wpdb->query("ALTER TABLE $bsd_table_name_bookings ADD is_leader bigint(20) NULL DEFAULT NULL");
+			$wpdb->query( "ALTER TABLE $bsd_table_name_bookings ADD is_leader bigint(20) NULL DEFAULT NULL" );
 
 			$current_version++;
 	}
 
-	update_option('bsd_current_db_version', $current_version);
+	update_option( 'bsd_current_db_version', $current_version );
 }
-add_action('plugins_loaded', 'bsd_update_db');
+add_action( 'plugins_loaded', 'bsd_update_db' );
+
+
+/*
+ * bsd_update_posts_after_time
+ *
+ * move posts to trash when bsd time is over
+ */
+function bsd_update_posts_after_time() {
+
+	$args = array(
+		'posts_per_page'   => 100,
+		'offset'           => 0,
+		'category'         => '',
+		'category_name'    => '',
+		'include'          => '',
+		'exclude'          => '',
+		'post_type'        => 'bsds',
+		'post_mime_type'   => '',
+		'post_parent'      => '',
+		'author'           => '',
+		'author_name'      => '',
+		'post_status'      => array( 'publish' ),
+		'suppress_filters' => true,
+	);
+
+	$posts_array = get_posts( $args );
+
+	date_default_timezone_set( 'Europe/Berlin' );
+
+	$date = strtotime( date( 'd.m.Y', time() ) );
+
+	foreach ( $posts_array AS $post ) {
+
+		$post_date = strtotime( get_post_meta( $post->ID, '_bsd_begin_date', true ) );
+
+		if ( $date > $post_date && $post->post_status == 'publish' ) {
+			$post->post_status = 'trash';
+			wp_update_post( $post );
+		}
+	}
+}
+add_action('admin_init', 'bsd_update_posts_after_time');
 
 /*
  * bsd_add_default_values_settings
@@ -217,7 +259,7 @@ function bsd_create_posttype() {
 			),
 			'public'      => true,
 			'has_archive' => true,
-			'rewrite'     => array('slug' => 'BSDs'),
+			'rewrite'     => array( 'slug' => 'BSDs' ),
 		)
 	);
 }
@@ -237,16 +279,16 @@ function bsd_get_event_count_persons( $post_id = 0, $option = 'all' ) {
 
 	if ( 'all' == $option ) {
 
-		$cnt_data = count( bsd_get_event_data(0,$post_id,0, 'events_on_post') );
+		$cnt_data = count( bsd_get_event_data( 0,$post_id,0, 'events_on_post' ) );
 
 	} elseif ( 'fix_only' == $option ) {
 
-		$cnt_data = count( bsd_get_event_data(0,$post_id,1, 'events_on_post') );
+		$cnt_data = count( bsd_get_event_data( 0,$post_id,1, 'events_on_post' ) );
 
 	} elseif ( 'difference' == $option ) {
 		$cnt_data_all = get_post_meta( $post_id, '_bsd_count_persons', true );
 
-		$cnt_data_fix = count( bsd_get_event_data(0,$post_id,1, 'events_on_post') );
+		$cnt_data_fix = count( bsd_get_event_data( 0,$post_id,1, 'events_on_post' ) );
 
 		$cnt_data = $cnt_data_all - $cnt_data_fix;
 	}
@@ -458,7 +500,7 @@ function bsd_send_mail( $post_id, $user_id, $mailtype ) {
 				$message = str_replace( '[user_name]', $user->display_name, $message );
 				$message = str_replace( '[bsd_titel]', $post_data->post_title, $message );
 				$message = str_replace( '[bsd_ort]', get_post_meta( $post_id, '_bsd_location', true ), $message );
-				$message = str_replace( '[bsd_datum]', date('d.m.Y', strtotime( get_post_meta( $post_id, '_bsd_begin_date', true ) ) ), $message );
+				$message = str_replace( '[bsd_datum]', date( 'd.m.Y', strtotime( get_post_meta( $post_id, '_bsd_begin_date', true ) ) ), $message );
 				$message = str_replace( '[bsd_uhrzeit]', get_post_meta( $post_id, '_bsd_begin_time', true ), $message );
 				$message = str_replace( '[bsd_anzahl_personen]', get_post_meta( $post_id, '_bsd_count_persons', true ), $message );
 				$message = str_replace( '[bsd_info]', $post_data->post_content, $message );
@@ -520,7 +562,7 @@ function bsd_send_mail( $post_id, $user_id, $mailtype ) {
 			$message = str_replace( '[user_name]', $user->display_name, $message );
 			$message = str_replace( '[bsd_titel]', $post_data->post_title, $message );
 			$message = str_replace( '[bsd_ort]', get_post_meta( $post_id, '_bsd_location', true ), $message );
-			$message = str_replace( '[bsd_datum]', date('d.m.Y', strtotime( get_post_meta( $post_id, '_bsd_begin_date', true ) ) ), $message );
+			$message = str_replace( '[bsd_datum]', date( 'd.m.Y', strtotime( get_post_meta( $post_id, '_bsd_begin_date', true ) ) ), $message );
 			$message = str_replace( '[bsd_uhrzeit]', get_post_meta( $post_id, '_bsd_begin_time', true ), $message );
 			$message = str_replace( '[bsd_anzahl_personen]', get_post_meta( $post_id, '_bsd_count_persons', true ), $message );
 			$message = str_replace( '[bsd_info]', $post_data->post_content, $message );
@@ -542,14 +584,14 @@ function bsd_send_mail( $post_id, $user_id, $mailtype ) {
 			$message = nl2br( $message , false );
 
 			$args = array(
-				'role__in'     => array('wehrfhrung', 'administrator'),
+				'role__in' => array('wehrfhrung', 'administrator'),
 			);
 
 			$admin_users = get_users( $args );
 
 			$to = array();
 
-			foreach ($admin_users AS $user) {
+			foreach ( $admin_users AS $user ) {
 
 				$userdata = get_userdata( $user->ID );
 
@@ -613,12 +655,12 @@ function bsd_cron_exec () {
             " . $wpdb->prefix . "users
     " );
 
-	foreach ($user_mails AS $user_mail) {
+	foreach ( $user_mails AS $user_mail ) {
 
 		$message = 'Hallo ' . $user_mail->display_name . ',<br><br> auf ' .  get_site_url() . ' gibt es neue Brandsicherheitsdienste. Du findest sie im internen Bereich.<br><br>Bitte antworte nicht auf diese Mail, da sie automatisch generiert wurde.';
 
 		add_filter( 'wp_mail_content_type', 'bsd_set_html_mail_content_type' );
-		wp_mail( $user_mail->user_email, 'Neue BSDs', $message);
+		wp_mail( $user_mail->user_email, 'Neue BSDs', $message );
 		remove_filter( 'wp_mail_content_type', 'bsd_set_html_mail_content_type' );
 	}
 

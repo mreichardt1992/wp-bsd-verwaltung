@@ -12,10 +12,6 @@ function bsd_export_add_page() {
 
 function bsd_report_do_page() {
 
-	if( ! class_exists( 'WP_List_Table' ) ) {
-		require_once( ABSPATH . 'wp-admin/includes/class-wp-list-table.php' );
-	}
-
 	$active_tab = isset( $_GET[ 'tab' ] ) ? $_GET[ 'tab' ] : 'bsd_upcoming_bsds';
 
 	if( isset( $_GET[ 'tab' ] ) ) {
@@ -25,7 +21,7 @@ function bsd_report_do_page() {
 	?>
 	<div class="wrap">
 
-		<h2>Berichte</h2><br>
+		<h2>Berichte</h2>
 
 		<h2 class="nav-tab-wrapper">
 			<a href="edit.php?post_type=bsds&page=bsd-verwaltung-report.php&tab=bsd_upcoming_bsds" class="nav-tab <?php echo $active_tab == 'bsd_upcoming_bsds' ? 'nav-tab-active' : ''; ?>">Kommende Dienste</a>
@@ -114,7 +110,7 @@ function bsd_upcoming_bsds() {
 			continue;
 		}
 
-		$fix_users = bsd_get_event_data( 0, $post->ID, $is_fix = true, $return_type = 'events_on_post');
+		$fix_users = bsd_get_event_data( 0, $post->ID, $is_fix = true, $return_type = 'events_on_post' );
 
 		?>
 
@@ -128,9 +124,9 @@ function bsd_upcoming_bsds() {
 
 			<?php
 
-			if ( count( $fix_users ) !== 0 ) {
+			echo '<td>';
 
-				echo '<td>';
+			if ( count( $fix_users ) !== 0 ) {
 
 				$fix_users_output = '';
 
@@ -141,22 +137,23 @@ function bsd_upcoming_bsds() {
 				}
 
 				echo substr( $fix_users_output, 0, -2 );
-
-				echo '</td>';
 			}
+
+			echo '</td>';
+
 			?>
 
 		</tr>
 
 		<?php
-		$x ++;
+		$x++;
 	}
 
 	?>
 		</tbody>
 	</table><br>
 
-	<input id="bsd_report_print_button" class="button button-primary" name="print" value="Drucken" onclick="bsd_print_upcoming_bsds_report()" />
+    <button id="bsd_report_print_button" class="button button-primary" onclick="bsd_print_upcoming_bsds_report()" >Drucken</button>
 	<?php
 }
 
@@ -168,7 +165,7 @@ function bsd_userstatistics() {
 
 	foreach ( $get_users AS $get_user ) {
 
-		$bsd_data = bsd_get_event_data( $get_user->ID, 0, $is_fix = true, $return_type = 'events_on_user');
+		$bsd_data = bsd_get_event_data( $get_user->ID, 0, $is_fix = true, $return_type = 'events_on_user' );
 
 		$users[$get_user->ID] = array(
 			'bsd_count' => count( $bsd_data ),
@@ -212,7 +209,7 @@ function bsd_userstatistics() {
 		</tbody>
 	</table><br>
 
-	<input id="bsd_report_print_button" class="button button-primary" name="print" value="Drucken" onclick="bsd_print_bsd_user_statistics_report()" />
+    <button id="bsd_report_print_button" class="button button-primary" onclick="bsd_print_bsd_user_statistics_report()" >Drucken</button>
 
 	<?php
 
