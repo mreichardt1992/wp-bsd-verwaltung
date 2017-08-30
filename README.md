@@ -4,7 +4,7 @@ Donate link: http://www.bsd-verwaltung.de/donate
 Tags: Feuerwehr, BSD, Rettung, Rettungsdienst, THW, HiOrg, Wasserwacht, Bergrettung, Dienstverwaltung, Dienst, Verwaltung
 Requires at least: 3.5.0
 Tested up to: 4.8
-Stable tag: 1.2.3
+Stable tag: 1.3.0
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -21,11 +21,12 @@ Die prim&auml;re Zielgruppe des Plugins sind Feuerwehren im deutschsprachigen Ra
 Funktionen im &Uuml;berblick:
 
 * Anlegen der Dienste in gewohnter Art und Weise, wie Beitr&auml;ge und Seiten
-* Anzeigen aller zuk&uuml;nftigen Dienste auf der Homepage per Shortcode "BSD_Panel" oder "BSD_Table"
+* Anzeigen aller zuk&uuml;nftigen Dienste auf der Homepage per Shortcode "BSD_Panel"
 * Zugriff auf die ver&ouml;ffentlichten Dienste nur f&uuml;r angemeldete User
 * Markieren von Wachf&uuml;hrern (Verantwortlichen) &uuml;ber das User-Profil
 * E-Mail Benachrichtigungen bei Vergabe der Dienste an betreffende Personen sowie bei R&uuml;ckzug vom Dienst
 * Regelmäßige Benachrichtigung aller User per E-Mail bei neuen Diensten
+* Berichte über kommende Dienste und Anzahl durchgeführter Dienste pro User
 * Responsive Design (Mobil-f&auml;hig)
 
 == Installation ==
@@ -48,7 +49,7 @@ Erstellt eine neue Seite und f&uuml;gt dort den Shortcode `[BSD_Panel]` ein.
 
 = Ich habe einen Fehler im Plugin gefunden oder einen Verbesserungsvorschlag =
 
-Ich freue mich immer &uuml;ber Feedback. Entweder ihr erstellt ein neues Topic im Support-Bereich auf der [Plugin-Seite](https://wordpress.org/plugins/bsd-verwaltung/), erstellt einen Issue auf [GitHub](https://github.com/mreichardt1992/wp-bsd-verwaltung/issues) oder schickt mir eine Nachricht &uuml;ber das [Kontaktformular](http://bsd-verwaltung.de) auf meiner Homepage.
+Ich freue mich immer &uuml;ber Feedback. Entweder ihr erstellt ein neues Topic im Support-Bereich auf der [Plugin-Seite](https://wordpress.org/plugins/bsd-verwaltung/), erstellt einen Issue auf [GitHub](https://github.com/mreichardt1992/wp-bsd-verwaltung/issues) oder schickt mir eine Nachricht &uuml;ber die [Plugin-Homepage](http://bsd-verwaltung.de).
 
 = Gibt es eine Dokumentation zu diesem Plugin? =
 
@@ -59,8 +60,17 @@ Ja. Auf [bsd-verwaltung.de](http://bsd-verwaltung.de) findet Ihr die Doku.
 1. Auflistung der Dienste auf der Homepage
 2. Detailansicht eines Dienstes auf der Homepage
 3. &Uuml;bersicht der Felder im Admin-Bereich
+4. Berichte für den Administrator
 
 == Changelog ==
+
+= 1.3.0 =
+* Übersicht der Dienste im Backend erweitert
+* Personen können nun auch vom Admin zum Dienst hinzugefügt werden
+* Bereich 'Berichte' hinzugefügt
+* Einstellungen visuell überarbeitet
+* Einstellung 'Teilnehmer in BSD anzeigen' hinzugefügt
+* Shortcode BSD_Table entfernt
 
 = 1.2.3 =
 * Bugfix für Mailversand, einige Platzhalter wurden nicht korrekt ersetzt
