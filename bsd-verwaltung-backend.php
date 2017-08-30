@@ -64,9 +64,9 @@ function bsd_build_data_field( $post ) {
                     <table class="bsd_attendant_list">
                         <tr>
                             <td></td>
-                            <td>Name</td>
-                            <td>Teilnahme</td>
-                            <td>Wachf&uuml;hrer</td>
+                            <td><b>Name</b></td>
+                            <td><b>Teilnahme</b></td>
+                            <td><b>Wachf&uuml;hrer</b></td>
                         </tr>
 
                     <?php
@@ -83,7 +83,6 @@ function bsd_build_data_field( $post ) {
 
                     foreach ( $result AS $userdata ) {
                         echo '<tr>';
-
 
                         $user = get_userdata( $userdata->user_id );
 
@@ -115,14 +114,112 @@ function bsd_build_data_field( $post ) {
 
                         echo '</tr>';
                     }
+
                     ?>
                     </table>
+                    <br>
 
+                    <?php
+
+                        $input_disabled = '';
+                        $input_disabled_hint = '';
+
+                        if ( $post->post_status == 'publish' ) {
+	                        bsd_user_autocomplete_js( $result, $post->ID );
+                        } else {
+                            $input_disabled = esc_attr( 'disabled="disabled"' );
+	                        $input_disabled_hint =  esc_html( 'Vor Hinzuf&uuml;gen von Personen Dienst erst ver&ouml;ffentlichen!' );
+                        }
+
+                    ?>
+
+                    <input type="text" name="autocomplete" id="autocomplete" value="" placeholder="User hinzuf&uuml;gen..." <?php echo $input_disabled; ?> />
+                    <?php echo '<p style="color: gray;">' . $input_disabled_hint . '</p>'; ?>
                 </td>
             </tr>
         </table>
     </div>
 	<?php
+}
+
+function bsd_user_autocomplete_js( $set_users, $post_id ) {
+
+	$nonce = wp_create_nonce( "ajaxloadpost_nonce" );
+
+	$set_user_array = array();
+
+	foreach ( $set_users as $set_user ) {
+		$set_user_array[] = $set_user->user_id;
+    }
+
+    $args = array(
+                'order_by' => 'name',
+                'exclude' => $set_user_array
+            );
+
+	$users = get_users( $args );
+
+	if( $users ) {
+		foreach ( $users as $k => $user ) {
+			$source[ $k ]['ID']    = $user->ID;
+			$source[ $k ]['label'] = $user->display_name;
+		}
+
+		?>
+        <script type="text/javascript">
+            jQuery( document ).ready(function ( $ ) {
+                var users = <?php echo json_encode( array_values( $source ) ); ?>;
+
+                jQuery( 'input[name="autocomplete"]' ).autocomplete({
+                    source: users,
+                    minLength: 2,
+                    select: function ( event, ui ) {
+
+                        jQuery( '.bsd_attendant_list > tbody:last-child' ).append( '<tr><td></td><td>' + ui.item.value + '</td><td><input type="checkbox" id="bsd_attendant_' + ui.item.ID + '" name="bsd_attendants[]" value="' + ui.item.ID + '" ></td><td><input type="radio" id="bsd_leader_' + ui.item.ID + '" name="bsd_leader" value="' + ui.item.ID + '" disabled="disabled"></td></tr>' );
+
+                        jQuery( "input[name='bsd_attendants[]']" ).each( function () {
+
+                            var user_id = jQuery( this ).attr( 'value' );
+                            var checked = jQuery( this ).attr( 'checked' );
+                            var radio = jQuery( '#bsd_leader_' + user_id );
+
+                            if ( !checked ) {
+                                jQuery( '#bsd_leader_' + user_id ).attr( 'disabled', 'disabled' );
+                                jQuery( '#bsd_leader_' + user_id ).removeAttr( 'checked' );
+                            } else {
+                                jQuery( '#bsd_leader_' + user_id ).removeAttr( 'disabled' );
+                            }
+
+                            jQuery( this ).click( function () {
+                                if ( jQuery( this ).is( ':checked' ) ) {
+                                    radio.removeAttr( 'disabled' );
+                                } else {
+                                    radio.attr( 'disabled', 'disabled' );
+                                    radio.removeAttr( 'checked' );
+                                }
+                            })
+
+                        });
+
+                        jQuery.ajax({
+                            type: "POST",
+                            url: "<?php echo admin_url( 'admin-ajax.php' ); ?>",
+                            data: {
+                                action: 'bsd_add_user_to_event_by_admin',
+                                user_id: ui.item.ID,
+                                post_id: "<?php echo esc_js( $post_id ); ?>",
+                                nonce: "<?php echo esc_js( $nonce ); ?>"
+                            },
+                            success: function () {
+
+                            }
+                        });
+                    }
+                });
+            });
+        </script>
+		<?php
+	}
 }
 
 /*
@@ -153,11 +250,11 @@ function bsd_save_data_field_data( $post_id ) {
 
 	    $bsd_location = $_POST['bsd_location'];
 
-	    if ( false === is_string($bsd_location) ) {
+	    if ( false === is_string( $bsd_location ) ) {
 		    $bsd_location = '';
         }
 
-        if ( strlen($bsd_location) > 30 ) {
+        if ( strlen($bsd_location ) > 30 ) {
 		    $bsd_location = '';
         }
 
@@ -167,13 +264,13 @@ function bsd_save_data_field_data( $post_id ) {
 	if ( isset( $_REQUEST['bsd_begin_date'] ) ) {
 
 	    $begin_date = date( 'Y-m-d', strtotime( $_POST['bsd_begin_date'] ) );
-		$today = date("Y-m-d");
+		$today = date( "Y-m-d" );
 
 	    if ( $begin_date < $today ) {
 		    $begin_date = $today;
         }
 
-	    if ( 10 !== strlen($begin_date) ) {
+	    if ( 10 !== strlen( $begin_date ) ) {
 		    $begin_date = $today;
         }
 
@@ -187,9 +284,9 @@ function bsd_save_data_field_data( $post_id ) {
 	if ( isset( $_REQUEST['bsd_begin_time'] ) ) {
 
 	    $begin_time = $_POST['bsd_begin_time'];
-	    $now = date("H:s");
+	    $now = date( "H:s" );
 
-		if ( 5 !== strlen($begin_time) ) {
+		if ( 5 !== strlen( $begin_time ) ) {
 			$begin_time = $now;
 		}
 
@@ -235,7 +332,7 @@ function bsd_save_data_field_data( $post_id ) {
 
 			if ( $leader_id == $bsd_applied_user->user_id ) {
 				$is_leader = 1;
-				update_post_meta( $post_id, '_bsd_leader', sanitize_text_field( $leader_id ) );
+				update_post_meta( $post_id, '_bsd_leader', $leader_id );
             }
 	    }
 
@@ -322,6 +419,7 @@ function bsd_set_custom_edit_bsds_columns( $columns ) {
 
 	$columns['bsd_location']   = __( 'Ort', 'twentythirteen' );
 	$columns['bsd_begin_date'] = __( 'Dienstbeginn', 'twentythirteen' );
+	$columns['bsd_get_users_attended_fix'] = __( 'Meldungen / Fix', 'twentythirteen' );
 
 	return $columns;
 }
@@ -335,6 +433,9 @@ add_filter( 'manage_bsds_posts_columns', 'bsd_set_custom_edit_bsds_columns' );
  * Add the data to the custom columns for the BSDs post type
  */
 function bsd_custom_bsds_column( $column, $post_id ) {
+
+	global $wpdb;
+	global $bsd_table_name_bookings;
 
 	switch ( $column ) {
 
@@ -353,6 +454,39 @@ function bsd_custom_bsds_column( $column, $post_id ) {
 				echo $terms;
 			} else {
 				_e( 'Kein Datum verf&uuml;gbar', 'twentythirteen' );
+			}
+			break;
+
+		case 'bsd_get_users_attended_fix' :
+
+			$result_attended = $wpdb->get_results( $wpdb->prepare( "
+                                SELECT
+                                    *
+                                FROM
+                                    $bsd_table_name_bookings
+                                WHERE
+                                    post_id = %d					        					    
+                            ", $post_id ) );
+
+			$result_fix = $wpdb->get_results( $wpdb->prepare( "
+                                SELECT
+                                    *
+                                FROM
+                                    $bsd_table_name_bookings
+                                WHERE
+                                    post_id = %d AND 
+                                    is_fix = 1					        					    
+                            ", $post_id ) );
+
+			$count_users_attended = count( $result_attended );
+
+			$count_users_fix = count( $result_fix );
+
+			$terms = (string) $count_users_attended . ' / ' . (string) $count_users_fix;
+			if ( is_string( $terms ) ) {
+				echo $terms;
+			} else {
+				_e( 'Keine Daten verf&uuml;gbar', 'twentythirteen' );
 			}
 			break;
 

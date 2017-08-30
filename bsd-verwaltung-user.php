@@ -6,7 +6,7 @@ add_action( 'edit_user_profile', 'bsd_extra_user_profile_fields' );
 
 function bsd_extra_user_profile_fields( $user ) {
 
-	if (current_user_can('administrator') && is_admin()) {
+	if ( current_user_can( 'administrator' ) && is_admin() ) {
 
 		?>
 

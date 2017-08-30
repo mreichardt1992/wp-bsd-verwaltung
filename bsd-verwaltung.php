@@ -4,7 +4,7 @@
 Plugin Name: BSD Verwaltung
 Plugin URI:  http://bsd-verwaltung.de
 Description: Verwaltung und Vergabe von (Brandsicherheits-)Diensten an die Mannschaft der Feuerwehr
-Version:     1.2.3
+Version:     1.3.0
 Author:      Max Reichardt
 License:     GPLv2
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -38,6 +38,7 @@ if ( true === is_admin() ) {
 
 	include_once 'bsd-verwaltung-user.php';
 	include_once 'bsd-verwaltung-backend.php';
+	include_once 'bsd-verwaltung-report.php';
 	include_once 'bsd-verwaltung-settings.php';
 
 	wp_enqueue_script( 'bsd_verwaltung_timepicker_script', plugins_url( 'js/timepicker/jquery.timepicker.min.js' , __FILE__ ) );
@@ -86,7 +87,7 @@ add_action( 'wp_enqueue_scripts', 'bsd_load_css' );
  * add plugin css files to frontend
  */
 function bsd_load_admin_css() {
-	wp_enqueue_style( 'bsd_verwaltung_style', plugins_url( '/css/admin_styles.css' , __FILE__ ) );
+	wp_enqueue_style( 'bsd_verwaltung_admin_style', plugins_url( '/css/admin_styles.css' , __FILE__ ) );
 }
 add_action( 'admin_enqueue_scripts', 'bsd_load_admin_css' );
 
@@ -98,6 +99,10 @@ add_action( 'admin_enqueue_scripts', 'bsd_load_admin_css' );
 function bsd_load_admin_js() {
 	wp_enqueue_script( 'bsd_verwaltung_script' );
 	wp_register_script( 'bsd_verwaltung_script', plugins_url( '/js/admin_script.js' , __FILE__ ) );
+
+	wp_enqueue_script( 'jquery-ui-core' );
+	wp_enqueue_script( 'jquery-ui-autocomplete' );
+
 }
 add_action( 'admin_enqueue_scripts', 'bsd_load_admin_js' );
 
@@ -142,7 +147,7 @@ function bsd_create_db() {
 	) $charset_collate;
 	";
 
-	update_option('bsd_current_db_version', 1);
+	update_option( 'bsd_current_db_version', 1 );
 
 	require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 	dbDelta( $sql );
@@ -158,21 +163,63 @@ function bsd_update_db() {
 	global $wpdb;
 	global $bsd_table_name_bookings;
 
-	$current_version = get_option('bsd_current_db_version', 0);
+	$current_version = get_option( 'bsd_current_db_version', 0 );
 
-	switch($current_version)
+	switch( $current_version )
 	{
 		// First update
 		case 1:
 
-			$wpdb->query("ALTER TABLE $bsd_table_name_bookings ADD is_leader bigint(20) NULL DEFAULT NULL");
+			$wpdb->query( "ALTER TABLE $bsd_table_name_bookings ADD is_leader bigint(20) NULL DEFAULT NULL" );
 
 			$current_version++;
 	}
 
-	update_option('bsd_current_db_version', $current_version);
+	update_option( 'bsd_current_db_version', $current_version );
 }
-add_action('plugins_loaded', 'bsd_update_db');
+add_action( 'plugins_loaded', 'bsd_update_db' );
+
+
+/*
+ * bsd_update_posts_after_time
+ *
+ * move posts to trash when bsd time is over
+ */
+function bsd_update_posts_after_time() {
+
+	$args = array(
+		'posts_per_page'   => 100,
+		'offset'           => 0,
+		'category'         => '',
+		'category_name'    => '',
+		'include'          => '',
+		'exclude'          => '',
+		'post_type'        => 'bsds',
+		'post_mime_type'   => '',
+		'post_parent'      => '',
+		'author'           => '',
+		'author_name'      => '',
+		'post_status'      => array( 'publish' ),
+		'suppress_filters' => true,
+	);
+
+	$posts_array = get_posts( $args );
+
+	date_default_timezone_set( 'Europe/Berlin' );
+
+	$date = strtotime( date( 'd.m.Y', time() ) );
+
+	foreach ( $posts_array AS $post ) {
+
+		$post_date = strtotime( get_post_meta( $post->ID, '_bsd_begin_date', true ) );
+
+		if ( $date > $post_date && $post->post_status == 'publish' ) {
+			$post->post_status = 'trash';
+			wp_update_post( $post );
+		}
+	}
+}
+add_action('admin_init', 'bsd_update_posts_after_time');
 
 /*
  * bsd_add_default_values_settings
@@ -212,7 +259,7 @@ function bsd_create_posttype() {
 			),
 			'public'      => true,
 			'has_archive' => true,
-			'rewrite'     => array('slug' => 'BSDs'),
+			'rewrite'     => array( 'slug' => 'BSDs' ),
 		)
 	);
 }
@@ -232,16 +279,16 @@ function bsd_get_event_count_persons( $post_id = 0, $option = 'all' ) {
 
 	if ( 'all' == $option ) {
 
-		$cnt_data = count( bsd_get_event_data(0,$post_id,0, 'events_on_post') );
+		$cnt_data = count( bsd_get_event_data( 0,$post_id,0, 'events_on_post' ) );
 
 	} elseif ( 'fix_only' == $option ) {
 
-		$cnt_data = count( bsd_get_event_data(0,$post_id,1, 'events_on_post') );
+		$cnt_data = count( bsd_get_event_data( 0,$post_id,1, 'events_on_post' ) );
 
 	} elseif ( 'difference' == $option ) {
 		$cnt_data_all = get_post_meta( $post_id, '_bsd_count_persons', true );
 
-		$cnt_data_fix = count( bsd_get_event_data(0,$post_id,1, 'events_on_post') );
+		$cnt_data_fix = count( bsd_get_event_data( 0,$post_id,1, 'events_on_post' ) );
 
 		$cnt_data = $cnt_data_all - $cnt_data_fix;
 	}
@@ -254,7 +301,7 @@ function bsd_get_event_count_persons( $post_id = 0, $option = 'all' ) {
  *
  *
  */
-function bsd_get_event_data( $user_id = 0, $post_id = 0, $is_fix = false, $return_type = 'all_data' ) {
+function bsd_get_event_data( $user_id = 0, $post_id = 0, $is_fix = false, $return_type = 'all_events' ) {
 	global $wpdb;
 	global $bsd_table_name_bookings;
 
@@ -332,13 +379,52 @@ function bsd_book_user_on_event() {
 add_action( 'wp_ajax_nopriv_bsd_book_user_on_event', 'bsd_book_user_on_event' );
 add_action( 'wp_ajax_bsd_book_user_on_event', 'bsd_book_user_on_event' );
 
+
+/*
+ * bsd_add_user_to_event_by_admin
+ *
+ * add User to BSD table
+ */
+function bsd_add_user_to_event_by_admin() {
+	if ( ! wp_verify_nonce( $_POST['nonce'], "ajaxloadpost_nonce" ) ) {
+		exit( "Wrong nonce" );
+	}
+
+	global $wpdb;
+	global $bsd_table_name_bookings;
+
+	$post_id = intval( $_POST['post_id'] );
+	$user_id = intval( $_POST['user_id'] );
+
+	if ( ! $post_id ) {
+		return false;
+	}
+
+	if ( ! $user_id ) {
+		return false;
+	}
+
+	$data = array(
+		'post_id' => $post_id,
+		'user_id' => $user_id
+	);
+
+	$insert = $wpdb->insert( $bsd_table_name_bookings, $data );
+
+	echo $insert;
+
+	wp_die();
+}
+add_action( 'wp_ajax_nopriv_bsd_add_user_to_event_by_admin', 'bsd_add_user_to_event_by_admin' );
+add_action( 'wp_ajax_bsd_add_user_to_event_by_admin', 'bsd_add_user_to_event_by_admin' );
+
 /*
  * bsd_unbook_user_from_event
  *
  * delete User from BSD table
  */
 function bsd_unbook_user_from_event() {
-	if ( ! wp_verify_nonce( $_POST['nonce'], "ajaxloadpost_nonce_" . $_POST['user_id'] ) ) {
+	if ( ! wp_verify_nonce( $_POST['nonce'], "ajaxloadpost_nonce_" . wp_get_current_user()->ID ) ) {
 		exit( "Wrong nonce" );
 	}
 
@@ -414,7 +500,7 @@ function bsd_send_mail( $post_id, $user_id, $mailtype ) {
 				$message = str_replace( '[user_name]', $user->display_name, $message );
 				$message = str_replace( '[bsd_titel]', $post_data->post_title, $message );
 				$message = str_replace( '[bsd_ort]', get_post_meta( $post_id, '_bsd_location', true ), $message );
-				$message = str_replace( '[bsd_datum]', date('d.m.Y', strtotime( get_post_meta( $post_id, '_bsd_begin_date', true ) ) ), $message );
+				$message = str_replace( '[bsd_datum]', date( 'd.m.Y', strtotime( get_post_meta( $post_id, '_bsd_begin_date', true ) ) ), $message );
 				$message = str_replace( '[bsd_uhrzeit]', get_post_meta( $post_id, '_bsd_begin_time', true ), $message );
 				$message = str_replace( '[bsd_anzahl_personen]', get_post_meta( $post_id, '_bsd_count_persons', true ), $message );
 				$message = str_replace( '[bsd_info]', $post_data->post_content, $message );
@@ -476,7 +562,7 @@ function bsd_send_mail( $post_id, $user_id, $mailtype ) {
 			$message = str_replace( '[user_name]', $user->display_name, $message );
 			$message = str_replace( '[bsd_titel]', $post_data->post_title, $message );
 			$message = str_replace( '[bsd_ort]', get_post_meta( $post_id, '_bsd_location', true ), $message );
-			$message = str_replace( '[bsd_datum]', date('d.m.Y', strtotime( get_post_meta( $post_id, '_bsd_begin_date', true ) ) ), $message );
+			$message = str_replace( '[bsd_datum]', date( 'd.m.Y', strtotime( get_post_meta( $post_id, '_bsd_begin_date', true ) ) ), $message );
 			$message = str_replace( '[bsd_uhrzeit]', get_post_meta( $post_id, '_bsd_begin_time', true ), $message );
 			$message = str_replace( '[bsd_anzahl_personen]', get_post_meta( $post_id, '_bsd_count_persons', true ), $message );
 			$message = str_replace( '[bsd_info]', $post_data->post_content, $message );
@@ -498,14 +584,14 @@ function bsd_send_mail( $post_id, $user_id, $mailtype ) {
 			$message = nl2br( $message , false );
 
 			$args = array(
-				'role__in'     => array('wehrfhrung', 'administrator'),
+				'role__in' => array('wehrfhrung', 'administrator'),
 			);
 
 			$admin_users = get_users( $args );
 
 			$to = array();
 
-			foreach ($admin_users AS $user) {
+			foreach ( $admin_users AS $user ) {
 
 				$userdata = get_userdata( $user->ID );
 
@@ -569,12 +655,12 @@ function bsd_cron_exec () {
             " . $wpdb->prefix . "users
     " );
 
-	foreach ($user_mails AS $user_mail) {
+	foreach ( $user_mails AS $user_mail ) {
 
 		$message = 'Hallo ' . $user_mail->display_name . ',<br><br> auf ' .  get_site_url() . ' gibt es neue Brandsicherheitsdienste. Du findest sie im internen Bereich.<br><br>Bitte antworte nicht auf diese Mail, da sie automatisch generiert wurde.';
 
 		add_filter( 'wp_mail_content_type', 'bsd_set_html_mail_content_type' );
-		wp_mail( $user_mail->user_email, 'Neue BSDs', $message);
+		wp_mail( $user_mail->user_email, 'Neue BSDs', $message );
 		remove_filter( 'wp_mail_content_type', 'bsd_set_html_mail_content_type' );
 	}
 
