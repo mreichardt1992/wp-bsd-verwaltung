@@ -179,6 +179,25 @@ function bsd_update_db() {
 }
 add_action( 'plugins_loaded', 'bsd_update_db' );
 
+/*
+ * is_edit_page
+ *
+ * check if post is new or already published
+ */
+function is_edit_page( $new_edit = null ){
+	global $pagenow;
+	//make sure we are on the backend
+	if ( !is_admin() ) return false;
+
+
+	if( $new_edit == "edit" )
+		return in_array( $pagenow, array( 'post.php',  ) );
+	elseif($new_edit == "new") //check for new post page
+		return in_array( $pagenow, array( 'post-new.php' ) );
+	else //check for either new or edit
+		return in_array( $pagenow, array( 'post.php', 'post-new.php' ) );
+}
+
 
 /*
  * bsd_update_posts_after_time
@@ -233,6 +252,7 @@ function bsd_add_default_values_settings() {
 	add_option( 'color_picker_panel_header', '#eeeeee' );
 	add_option( 'color_picker_panel_header_active', '#666666' );
 	add_option( 'cron_last_search_for_bsd', time() );
+	add_option( 'access_for_frontend_panels', 0 );
 }
 register_activation_hook( __FILE__, 'bsd_add_default_values_settings' );
 
@@ -637,11 +657,7 @@ function bsd_set_html_mail_content_type() {
 function bsd_cron_exec () {
 
 	global $wpdb;
-
-	if ( true === empty( get_option( 'access_for_frontend_panels' ) ) ) {
-		return;
-	}
-
+	
 	$notification_count = get_option( 'bsd_mail_notification_count', 0 );
 
 	if ( $notification_count < 1 ) {

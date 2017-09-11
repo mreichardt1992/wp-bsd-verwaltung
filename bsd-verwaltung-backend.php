@@ -403,6 +403,10 @@ function bsd_save_data_field_data( $post_id ) {
 			bsd_send_mail( $post_id, $bsd_applied_user->user_id, 'agree_on_bsd' );
 		}
 	}
+
+	if ( is_edit_page( 'new' ) ) {
+	    update_option( 'bsd_mail_notification_count', 1 );
+    }
 }
 
 add_action( 'save_post_bsds', 'bsd_save_data_field_data', 10, 2 );
