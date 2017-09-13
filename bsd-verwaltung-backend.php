@@ -404,9 +404,7 @@ function bsd_save_data_field_data( $post_id ) {
 		}
 	}
 
-	if ( is_edit_page( 'new' ) ) {
-	    update_option( 'bsd_mail_notification_count', 1 );
-    }
+    update_option( 'bsd_mail_notification_count', 1 );
 }
 
 add_action( 'save_post_bsds', 'bsd_save_data_field_data', 10, 2 );
