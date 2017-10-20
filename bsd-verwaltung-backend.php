@@ -404,7 +404,7 @@ function bsd_save_data_field_data( $post_id ) {
 		}
 	}
 
-    if ( $_POST['auto_draft'] == 1 ) {
+    if ( $_POST['original_post_status'] == 'auto-draft' ) {
         update_option( 'bsd_mail_notification_count', 1 );
     }
 }
