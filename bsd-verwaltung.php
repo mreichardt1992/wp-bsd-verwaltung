@@ -652,14 +652,26 @@ function bsd_cron_exec () {
             " . $wpdb->prefix . "users
     " );
 
+    add_filter( 'wp_mail_from', function() {
+
+        $domain = get_site_url();
+
+        $domain = str_replace( 'http://', '', $domain );
+        $domain = str_replace( 'https://', '', $domain );
+        $domain = str_replace( 'www.', '', $domain );
+
+        $domain = 'BSD-Verwaltung@' . $domain;
+
+        return $domain;
+
+    });
+
 	foreach ( $user_mails AS $user_mail ) {
 
 		$message = 'Hallo ' . $user_mail->display_name . ',<br><br> auf ' .  get_site_url() . ' gibt es neue Brandsicherheitsdienste. Du findest sie im internen Bereich.<br><br>Zum Login hier <a href="' .  get_site_url() . '/wp-admin">klicken</a>.<br><br>Bitte antworte nicht auf diese Mail, da sie automatisch generiert wurde.';
 
-        $headers[] = 'From: FFBN BSDs <bsd@ffbn.de>';
-
         add_filter( 'wp_mail_content_type', 'bsd_set_html_mail_content_type' );
-        wp_mail( $user_mail->user_email, 'Neue BSDs', $message, $headers );
+        wp_mail( $user_mail->user_email, 'Neue BSDs', $message );
         remove_filter( 'wp_mail_content_type', 'bsd_set_html_mail_content_type' );
 
 	}
